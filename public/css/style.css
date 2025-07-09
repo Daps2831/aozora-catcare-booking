@@ -1,0 +1,653 @@
+
+/* Resetting margin and padding for the whole page */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Main content takes up all available space */
+main {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    flex: 1; /* Mengisi ruang tersisa antara header dan footer */
+}
+
+/* Styling for the header (Navigation) */
+header {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Navigation menu */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgb(200, 197, 197); /* Mengganti outline dengan box-shadow */
+}
+
+/* Logo styling */
+.logo-container img {
+    width: 130px;      /* Tentukan lebar gambar */
+    height: auto;      /* Menjaga rasio gambar tetap proporsional */
+    border-radius: 50%; /* Membuat gambar menjadi bulat */
+    object-fit: cover;  /* Menjaga gambar agar tidak terdistorsi */
+}
+
+/* Navigation links */
+nav ul {
+    list-style-type: none;
+    display: flex;
+    gap: 50px;  /* Mengatur jarak antar elemen menu */
+    margin: 0px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, outline 0.3s ease; /* Menambahkan transisi untuk outline */
+}
+
+/* Call-to-action buttons */
+.cta-buttons {
+    display: flex;
+    gap: 20px;  /* Menambahkan jarak antar tombol */
+    justify-content: flex-start; /* Tombol akan sejajar di kiri */
+    margin-top: 20px;  /* Memberikan jarak antara teks dan tombol */
+}
+.cta-btn-diteks {
+    padding: 12px 24px;
+    background-color: #333;
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    width: auto;  /* Mengatur lebar tombol sesuai dengan ukuran kontennya */
+    max-width: 100px;  /* Mengatur lebar maksimal tombol */
+    text-align: center;  /* Menjaga teks di dalam tombol agar rata tengah */
+}
+
+.cta-btn-diteks:hover {
+    background-color: #555;
+}
+.cta-btn-masuk {
+    margin-right: 100px;  /* Menambahkan jarak kiri pada tombol Masuk */
+    padding: 12px 24px;
+    background-color: #333;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+.cta-btn-masuk:hover {
+    background-color: #555;
+}
+
+.cta-btn-putih {
+    padding: 12px 24px;
+    background-color: #ffffff;
+    color: #000000;
+    font-weight: bold;
+    border: none;  /* Tidak menggunakan border biasa */
+    cursor: pointer;
+    outline: 2px solid #000000;  /* Menambahkan outline hitam dengan ketebalan 2px */
+    transition: outline 0.3s ease;  /* Menambahkan transisi saat outline berubah */
+}
+
+.cta-btn-putih:hover {
+    outline: 2px solid #887d7a;  /* Mengubah warna outline saat tombol di-hover */
+}
+
+.cta-btn-putih.diteks{   
+    width: auto;  /* Mengatur lebar tombol sesuai dengan ukuran kontennya */
+    max-width: 100px;  /* Mengatur lebar maksimal tombol */
+    text-align: center;  /* Menjaga teks di dalam tombol agar rata tengah */
+}
+
+.cta-btn-putih.diteks:hover {
+    outline: 2px solid #887d7a;  /* Mengubah warna outline saat tombol di-hover */
+}
+
+/* Main content section */
+.intro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;  /* Menjaga elemen tetap berada di tengah secara vertikal */
+    gap: 40px;
+    min-height: 600px;  /* Menentukan tinggi kontainer agar elemen bisa terpusat */
+}
+
+.text-content {
+    width: 50%;  /* Menetapkan lebar teks */
+    text-align: left;
+    display: flex;
+    flex-direction: column; /* Agar teks dan tombol berada dalam satu kolom */
+    justify-content: center; /* Menjaga teks dan tombol berada di tengah vertikal */
+}
+
+.text-content h1, .text-content p, .cta-btn {
+    margin-bottom: 15px; /* Memberikan jarak antar teks dan tombol */
+}
+
+.text-content p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.intro h1 {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.intro p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+/* Image content */
+.image-content {
+    display: grid;  /* Menggunakan Grid untuk menata gambar */
+    grid-template-columns: repeat(2, 1fr);  /* Dua kolom */
+    gap: 20px;  /* Memberikan jarak antar gambar */
+}
+
+.image-content img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Footer Styling */
+footer {
+    display: flex;
+    justify-content: center;  /* Center content horizontally */
+    align-items: center;      /* Center content vertically */
+    width: 100%;              /* Full width of the page */
+    padding: 20px;
+    background-color: #333;   /* Dark background */
+    color: #fff;
+    margin-top: auto;         /* Ensures footer stays at the bottom */
+    text-align: center;       /* Ensures the text is centered */
+}
+
+footer p {
+    margin: 0;
+}
+
+/* Form styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form input {
+    padding: 12px 20px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+}
+
+form input:focus {
+    border-color: #333;
+}
+
+/* Register Link */
+.register-link {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.register-link a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+.register-link a:hover {
+    color: #4CAF50;  /* Mengubah warna saat di-hover */
+}
+
+/* Kontak Kami - Hanya Menampilkan Info Kontak */
+.contact-section {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.contact-info {
+    width: 60%;
+    margin: 0 auto;
+}
+
+.contact-info h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.contact-item img {
+    width: 30px;
+    margin-right: 10px;
+}
+
+.contact-item p {
+    font-size: 16px;
+}
+
+.contact-item a {
+    color: #333;
+    text-decoration: none;
+}
+
+.contact-item a:hover {
+    color: #4CAF50;  /* Mengubah warna saat hover */
+}
+
+.get-directions {
+    font-weight: bold;
+    text-decoration: underline;
+    color: #333;
+}
+
+.get-directions:hover {
+    color: #4CAF50;
+}
+
+/* Mengatur bagian footer agar di bawah halaman */
+#footer-main {
+    text-align: center;
+    position: absolute;
+    bottom: 0;
+    width: 100%;  /* Memastikan footer mengambil seluruh lebar halaman */
+    padding: 20px;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Perbaiki posisi footer agar tidak menghalangi gambar */
+#footer-slider {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px; /* Memberikan ruang di atas footer agar tidak tertutup */
+}
+
+/* Styling untuk slider / gambar-gambar layanan */
+.contact-info {
+    padding-bottom: 100px;  /* Menambahkan padding bawah agar tidak terhalang */
+}
+
+
+/* Responsif - Mengubah tampilan saat layar kecil */
+@media (max-width: 768px) {
+    .contact-section {
+        flex-direction: column;  /* Mengatur form dan info kontak menjadi kolom pada layar kecil */
+        gap: 20px;
+    }
+
+    .text-content,
+    .contact-info {
+        width: 100%;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 14px;
+    }
+
+    .contact-item p {
+        font-size: 14px;
+    }
+}
+
+/* Styling untuk Galeri Layanan */
+.service-gallery {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.service-gallery h1 {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.service-gallery p {
+    font-size: 18px;
+    margin-bottom: 40px;
+}
+
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+    overflow-y: scroll; /* Membuat gambar bisa digulir ke bawah */
+    max-height: 600px; /* Menentukan tinggi maksimal galeri */
+}
+
+.gallery-item {
+    width: 300px;
+    text-align: center;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.gallery-item p {
+    font-size: 16px;
+    color: #333;
+}
+
+/* Styling untuk Form Pendaftaran Kucing */
+.register-kucing-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f8f8f8;
+}
+
+.register-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+}
+
+.register-container h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    margin-top: 5px;
+}
+
+.form-group input:focus, .form-group textarea:focus {
+    border-color: #333;
+    outline: none;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Styling untuk Form Input Data Diri */
+.customer-data-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f8f8f8;
+}
+
+.customer-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+}
+
+.customer-container h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    margin-top: 5px;
+}
+
+.form-group input:focus {
+    border-color: #333;
+    outline: none;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Styling untuk Dashboard */
+/* Menempatkan tombol garis tiga di sebelah kanan navbar */
+.menu-btn {
+    position: fixed; /* Memperbaiki posisi tombol sehingga tetap di tempat meskipun scroll */
+    top: 140px; /* Menempatkan tombol tepat di bawah navbar (sesuaikan dengan tinggi navbar) */
+    right: 60px; /* Posisikan tombol 20px dari kanan */
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.bar {
+    background-color: #333;
+    height: 5px;
+    margin: 5px 0;
+    width: 100%;
+    transition: all 0.3s;
+
+}
+/* Menu samping */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: -25%;
+    width: 25%;
+    height: 100%;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+/* Menambahkan tombol X untuk menutup menu */
+.close-btn {
+    background-color: #333;
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+/* Menu konten dalam samping */
+.side-menu-content {
+    margin-top: 50px;
+}
+
+.profile-option {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    display: block;
+    padding: 10px 0;
+}
+
+/* Ketika menu samping terbuka */
+.side-menu.open {
+    right: 0;
+}
+
+/* Animasi untuk tombol garis tiga */
+.menu-btn.open .bar:nth-child(1) {
+    transform: rotate(45deg);
+    position: relative;
+    top: 8px;
+}
+
+.menu-btn.open .bar:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-btn.open .bar:nth-child(3) {
+    transform: rotate(-45deg);
+    position: relative;
+    top: -8px;
+}
+
+/* Styling untuk tombol edit profil dan form */
+.btn-edit {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px; /* Tambahkan border-radius agar lebih modern */
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block; /* Pastikan ini, atau gunakan 'block' jika ingin tombol selalu di baris baru */
+    margin-top: 20px; /* <--- Tambahkan margin-top di sini untuk jarak dari teks di atasnya */
+    transition: background-color 0.3s ease; /* Efek hover */
+}
+
+.btn-edit:hover {
+    background-color: #45a049; /* Warna sedikit lebih gelap saat hover */
+}
+
+.btn-submit {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px; /* Tambahkan border-radius agar lebih modern */
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s ease; /* Efek hover */
+}
+
+.btn-submit:hover {
+    background-color: #45a049; /* Warna sedikit lebih gelap saat hover */
+}
+
+/* Styling untuk detail profil agar ada jarak antar baris */
+.profile-details p {
+    margin-bottom: 8px; /* Memberikan sedikit jarak antar baris detail profil */
+    line-height: 1.5;   /* Meningkatkan jarak antar baris teks */
+}
+
+/* Styling untuk form edit profil */
+.edit-profile {
+    margin-top: 40px; /* Berikan jarak yang lebih besar dari tombol "Edit Profil" */
+    padding: 20px;
+    border: 1px solid #eee; /* Tambahkan border tipis */
+    border-radius: 8px; /* Rounded corners */
+    background-color: #fff; /* Background putih */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Sedikit bayangan */
+}
+
+.edit-profile h3 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.edit-profile form div {
+    margin-bottom: 15px; /* Tingkatkan jarak antar input field */
+}
+
+.edit-profile form label {
+    display: block; /* Pastikan label di baris baru */
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.edit-profile form input {
+    width: 100%;
+    padding: 12px; /* Tingkatkan padding input */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Penting agar padding tidak menambah lebar */
+    font-size: 16px; /* Ukuran font input */
+}
+
+.edit-profile form input:focus {
+    border-color: #4CAF50; /* Border hijau saat fokus */
+    outline: none;
+}
