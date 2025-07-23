@@ -12,7 +12,7 @@
             </div>
             <div class="contact-item">
                 <img src="{{ asset('images/phone-icon.png') }}" alt="Phone Icon">
-                <p>Telepon: <a href="tel:+15550000000">+1 (555) 000-0000</a></p>
+                <p>Telepon: <a href="tel:+6283831833743">+6283831833743</a></p>
             </div>
             <div class="contact-item">
                 <img src="{{ asset('images/location-icon.png') }}" alt="Location Icon">

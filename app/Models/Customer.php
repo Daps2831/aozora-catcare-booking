@@ -21,7 +21,7 @@ class Customer extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function kucing()
+    public function kucings()
     {
         return $this->hasMany(Kucing::class);
     }

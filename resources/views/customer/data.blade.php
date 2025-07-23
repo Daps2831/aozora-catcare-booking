@@ -48,6 +48,4 @@
     @endif
 @endsection
 
-@section('styles')
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-@endsection
+

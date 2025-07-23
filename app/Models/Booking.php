@@ -10,7 +10,7 @@ class Booking extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_id', 'kucing_id', 'layanan_id', 'tanggalBooking', 'statusBooking',
+        'customer_id', 'layanan_id', 'tanggalBooking', 'statusBooking','estimasi'
     ];
 
     public function customer()
@@ -18,9 +18,9 @@ class Booking extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function kucing()
+    public function kucings() // Ganti nama menjadi jamak (plural)
     {
-        return $this->belongsTo(Kucing::class);
+        return $this->belongsToMany(Kucing::class, 'booking_kucing');
     }
 
     public function layanan()

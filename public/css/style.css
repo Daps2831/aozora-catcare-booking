@@ -6,11 +6,17 @@
     box-sizing: border-box;
 }
 
+/* Ganti kode body Anda dengan ini */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
+
+    /* Tambahan untuk Flexbox */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* vh = viewport height */
 }
 
 /* Main content takes up all available space */
@@ -189,7 +195,7 @@ footer {
     padding: 20px;
     background-color: #333;   /* Dark background */
     color: #fff;
-    margin-top: auto;         /* Ensures footer stays at the bottom */
+    /*margin-top: auto;         /* Ensures footer stays at the bottom */
     text-align: center;       /* Ensures the text is centered */
 }
 
@@ -502,6 +508,7 @@ form input:focus {
     width: 30px;
     height: 30px;
     cursor: pointer;
+    z-index: 1000; /* TAMBAHKAN INI: Pastikan selalu di atas */
 }
 
 .bar {
@@ -650,4 +657,199 @@ form input:focus {
 .edit-profile form input:focus {
     border-color: #4CAF50; /* Border hijau saat fokus */
     outline: none;
+}
+
+.profile-option {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    display: block;
+    padding: 10px 0;
+}
+
+/* Pastikan form di dalam menu tidak memiliki padding tambahan */
+form.profile-option {
+    padding: 0;
+    margin: 0;
+}
+
+.logout-button {
+    /* ===== Reset Style Bawaan Tombol ===== */
+    background: none;
+    border: none;
+    margin: 0;
+    
+    /* ===== Samakan dengan Style Link (.profile-option) ===== */
+    padding: 10px 0; /* Samakan paddingnya */
+    font-family: inherit; /* Gunakan font yang sama */
+    font-size: 18px; /* Samakan ukuran font */
+    color: white; /* Samakan warna font */
+    display: block; /* Buat agar mengisi satu baris penuh */
+    width: 100%;
+    text-align: left; /* Ratakan teks ke kiri */
+    text-decoration: none; /* Hapus garis bawah jika ada */
+
+    /* ===== Fungsionalitas ===== */
+    cursor: pointer;
+}
+
+/* Tambahkan efek hover agar konsisten */
+.logout-button:hover {
+    opacity: 0.8; /* Atau efek lain yang Anda inginkan */
+}
+
+.cat-grid {
+    display: flex; /* Mengaktifkan Flexbox untuk layout horizontal */
+    overflow-x: auto; /* Memungkinkan scrolling horizontal jika kartu melebihi lebar layar */
+    gap: 20px;
+    margin-top: 20px;
+    padding-bottom: 15px; /* Memberi sedikit ruang untuk scrollbar agar tidak menempel */
+}
+
+/* Kita juga perlu mengubah .cat-card agar tidak meregang */
+.cat-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #fff;
+    transition: transform 0.2s ease-in-out;
+
+    /* Tambahkan ini untuk mengatur lebar tetap */
+    flex-shrink: 0; /* Mencegah kartu menyusut */
+    width: 220px; /* Atur lebar kartu sesuai keinginan Anda */
+}
+
+.cat-card:hover {
+    transform: translateY(-5px); /* Efek sedikit terangkat saat di-hover */
+}
+
+.cat-card img {
+    width: 100%;
+    height: 150px; /* Atur tinggi gambar agar seragam */
+    object-fit: cover; /* Pastikan gambar mengisi area tanpa distorsi */
+}
+
+.cat-card .cat-info {
+    padding: 15px;
+}
+
+.cat-card h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+}
+
+.cat-card p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.cat-section-container {
+    width: 100%;
+    margin-bottom: 30px; /* Jarak ke kartu jadwal mendatang */
+}
+
+.cat-section-header {
+    display: flex;
+    justify-content: space-between; /* Mendorong judul ke kiri dan tombol ke kanan */
+    align-items: center; /* Membuat judul dan tombol sejajar secara vertikal */
+    margin-bottom: 10px;
+}
+
+.cat-section-header h3 {
+    margin: 0;
+    font-size: 1.5em; /* Sesuaikan ukuran font jika perlu */
+}
+
+.btn-tambah-kucing {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.2s ease-in-out; /* Transisi untuk efek hover */
+}
+
+.btn-tambah-kucing:hover {
+    background-color: #f0f0f0;
+    color: #000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.welcome-container {
+    text-align: center; /* Membuat tulisan selamat datang ke tengah */
+    width: 100%;
+    margin-bottom: 20px; /* Jarak ke konten di bawahnya */
+}
+
+.dashboard-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* KUNCI: Membuat semua item di dalamnya rata kiri */
+    width: 100%;
+}
+
+.cat-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.booking-section-container {
+    width: 100%;
+    margin-top: 40px; /* Jarak dari bagian kucing */
+}
+
+.booking-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.booking-section-header h3 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.btn-booking-sekarang {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.btn-booking-sekarang:hover {
+    background-color: #555;
+}
+
+.booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.booking-item {
+    background-color: #fff;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.booking-item p {
+    margin: 0;
+}
+
+.booking-details {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
 }

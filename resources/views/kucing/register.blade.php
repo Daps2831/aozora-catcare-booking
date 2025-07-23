@@ -13,14 +13,27 @@
             @endif
 
             <!-- Form Pendaftaran Kucing -->
-            <form action="{{ route('kucing.store') }}" method="POST">
+            <form action="{{ route('kucing.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
+
+                {{-- TAMBAHKAN FORM GROUP INI UNTUK GAMBAR --}}
+                <div class="form-group">
+                    <label for="gambar">Foto Kucing (Opsional)</label>
+                    {{-- Tambahkan id="gambar-input" --}}
+                    <input type="file" id="gambar-input" name="gambar" accept="image/*">
+                    @error('gambar')
+                        <div class="error">{{ $message }}</div>
+                    @enderror
+
+                    {{-- Tambahkan elemen ini untuk menampung preview --}}
+                    <img id="image-preview" src="#" alt="Preview Gambar" style="display:none; max-width: 200px; margin-top: 15px; border-radius: 8px;" />
+                </div>
 
                 <!-- Nama Kucing -->
                 <div class="form-group">
-                    <label for="namaKucing">Nama Kucing</label>
-                    <input type="text" id="namaKucing" name="namaKucing" value="{{ old('namaKucing') }}" required>
-                    @error('namaKucing')
+                    <label for="nama_kucing">Nama Kucing</label>
+                    <input type="text" id="nama_kucing" name="nama_kucing" value="{{ old('nama_kucing') }}" required>
+                    @error('nama_kucing')
                         <div class="error">{{ $message }}</div>
                     @enderror
                 </div>
@@ -59,4 +72,9 @@
             </form>
         </div>
     </section>
+@endsection
+
+{{-- TAMBAHKAN BLOK KODE INI DI BAGIAN PALING BAWAH --}}
+@section('scripts')  
+    <script src="{{ asset('js/script.js') }}"></script>
 @endsection

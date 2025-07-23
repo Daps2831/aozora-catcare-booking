@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KucingController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookingController; 
 
 // Halaman Beranda
 Route::get('/', function () {
@@ -61,3 +62,20 @@ Route::get('/kucing/register', [KucingController::class, 'showForm'])->name('kuc
 // Route untuk menyimpan data kucing
 Route::post('/kucing/register', [KucingController::class, 'store'])->name('kucing.store');
 
+// Route untuk logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Route untuk menampilkan halaman edit kucing
+Route::get('/kucing/{kucing}/edit', [KucingController::class, 'edit'])->name('kucing.edit');
+
+// Route untuk memproses pembaruan data kucing
+Route::put('/kucing/{kucing}', [KucingController::class, 'update'])->name('kucing.update');
+
+//t Route untuk Halaman Kalender
+Route::get('/booking', function () {
+    return view('booking.index');
+})->name('booking.index')->middleware('auth');
+
+// TAMBAHKAN DUA ROUTE INI UNTUK PROSES BOOKING
+Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
+Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
