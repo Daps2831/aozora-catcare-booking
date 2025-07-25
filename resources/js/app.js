@@ -5,7 +5,25 @@ import './bootstrap';
 // Import library kalender
 import { Calendar } from 'vanilla-calendar-pro';
 
+// IMPORT DUA FILE CSS INI
 
+import 'vanilla-calendar-pro/styles/layout.css';
+
+
+
+
+/**
+ * ===================================================================
+ * JALANKAN SEMUA FUNGSI SAAT HALAMAN SIAP
+ * ===================================================================
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    initSideMenu();
+    initImagePreview();
+    initBookingCalendar();
+    initAddress();
+    initHours();
+});
 
 /**
  * ===================================================================
@@ -37,14 +55,29 @@ function initSideMenu() {
 function initImagePreview() {
     const gambarInput = document.getElementById('gambar-input');
     const imagePreview = document.getElementById('image-preview');
+    const fileNameSpan = document.getElementById('file-name');
+    const btnGantiFoto = document.getElementById('btn-ganti-foto');
     if (gambarInput && imagePreview) {
         gambarInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
                 imagePreview.style.display = 'block';
                 imagePreview.src = URL.createObjectURL(file);
+                fileNameSpan.textContent = file.name;
+                fileNameSpan.style.display = 'inline-block';
+                gambarInput.style.display = 'none';
+                btnGantiFoto.style.display = 'inline-block';
             }
         });
+        if (btnGantiFoto) {
+            btnGantiFoto.addEventListener('click', function() {
+                gambarInput.value = '';
+                gambarInput.style.display = 'inline-block';
+                fileNameSpan.style.display = 'none';
+                btnGantiFoto.style.display = 'none';
+                imagePreview.src = imagePreview.dataset.original || imagePreview.src;
+            });
+        }
     }
 }
 
@@ -56,41 +89,31 @@ function initBookingCalendar() {
 
     if (calendarEl && timeInfo && btnKonfirmasi) {
         const calendar = new Calendar('#my-calendar', {
-            settings: {
-                lang: 'en',
-                iso8601: true,
-                range: {
-                    disablePast: true,
-                    disabled: [],
-                },
-                selectionDatesMode: 'single',
-                selected: { dates: [] },
-                visibility: {
-                    controls: true,
-                },
+            lang: 'en',
+            iso8601: true,
+            selectionDatesMode: 'single',
+            selected: { dates: [] },
+            controls: true,
+            disableDatesPast: true,
+            months: {
+                long: [
+                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                ],
+                short: [
+                    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+                    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+                ],
             },
-            locale: {
-                months: {
-                    long: [
-                        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                    ],
-                    short: [
-                        'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-                        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
-                    ],
-                },
-                weekdays: {
-                    long: [
-                        'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
-                    ],
-                    short: [
-                        'Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'
-                    ],
-                },
+            weekdays: {
+                long: [
+                    'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
+                ],
+                short: [
+                    'Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'
+                ],
             },
             onClickDate(self) {
-                // self.context.selectedDates adalah array tanggal terpilih
                 if (self.context.selectedDates.length > 0) {
                     selectedDate = self.context.selectedDates[0];
                     timeInfo.textContent = `Tanggal dipilih: ${selectedDate}`;
@@ -100,6 +123,9 @@ function initBookingCalendar() {
                     timeInfo.textContent = '';
                     btnKonfirmasi.disabled = true;
                 }
+            },
+            onClickDayDisabled(self) {
+                alert('Tanggal penuh, silakan pilih tanggal lain.');
             },
         });
 
@@ -113,8 +139,9 @@ function initBookingCalendar() {
                         const count = data[date];
                         if (count >= 10) datesToDisable.push(date);
                     }
+                    // GUNAKAN disableDates di root, BUKAN settings.range.disabled!
                     calendar.set({
-                        range: { disabled: datesToDisable }
+                        disableDates: datesToDisable
                     });
                 });
         };
@@ -134,13 +161,51 @@ function initBookingCalendar() {
     }
 }
 
-/**
- * ===================================================================
- * JALANKAN SEMUA FUNGSI SAAT HALAMAN SIAP
- * ===================================================================
- */
-document.addEventListener('DOMContentLoaded', () => {
-    initSideMenu();
-    initImagePreview();
-    initBookingCalendar();
-});
+
+function initAddress() {
+    const alamatDefault = document.getElementById('alamatDefault').textContent;
+    const alamatBookingInput = document.getElementById('alamatBookingInput');
+    const radioDefault = document.getElementById('alamat_default');
+    const radioManual = document.getElementById('alamat_manual');
+
+    radioDefault.addEventListener('change', function() {
+        if (radioDefault.checked) {
+            alamatBookingInput.value = alamatDefault;
+            alamatBookingInput.readOnly = true;
+        }
+    });
+    radioManual.addEventListener('change', function() {
+        if (radioManual.checked) {
+            alamatBookingInput.value = '';
+            alamatBookingInput.readOnly = false;
+            alamatBookingInput.focus();
+        }
+    });
+}
+
+
+function initHours() {
+    const slider = document.getElementById('jamBookingSlider');
+    const manual = document.getElementById('jamBookingManual');
+    const label = document.getElementById('jamBookingLabel');
+
+    function sliderToTime(val) {
+        // val: 8 ... 18, step 0.5
+        const hour = Math.floor(val);
+        const minute = (val % 1 === 0.5) ? '30' : '00';
+        return `${hour.toString().padStart(2, '0')}:${minute}`;
+    }
+
+    slider.addEventListener('input', function() {
+        const jam = sliderToTime(slider.value);
+        manual.value = jam;
+        label.textContent = 'Jam dipilih: ' + jam;
+    });
+
+    manual.addEventListener('input', function() {
+        label.textContent = 'Jam dipilih: ' + manual.value;
+        // Sinkronisasi slider jika user input manual
+        const [h, m] = manual.value.split(':');
+        slider.value = parseInt(h) + (m === '30' ? 0.5 : 0);
+    });
+}

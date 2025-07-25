@@ -85,5 +85,11 @@ class User extends Authenticatable
         }
         return $user;
     }
+
+    // Relasi dengan Booking
+    public function bookings()
+    {
+        return $this->hasMany(\App\Models\Booking::class, 'customer_id', 'id');
+    }
 }
 

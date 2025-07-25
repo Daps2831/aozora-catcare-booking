@@ -1,4 +1,3 @@
-
 /* Resetting margin and padding for the whole page */
 * {
     margin: 0;
@@ -508,7 +507,6 @@ form input:focus {
     width: 30px;
     height: 30px;
     cursor: pointer;
-    z-index: 1000; /* TAMBAHKAN INI: Pastikan selalu di atas */
 }
 
 .bar {
@@ -852,4 +850,312 @@ form.profile-option {
     font-size: 0.9em;
     color: #666;
     margin-top: 5px;
+}
+
+.btn-cancel {
+    background-color: #f30101;
+    color: #333;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.btn-cancel:hover {
+    background-color: #b0b0b0;
+}
+
+/* Header kalender: bulan dan tahun di tengah, panah kiri-kanan */
+#my-calendar .vc-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+}
+
+#my-calendar .vc-header_content {
+    font-size: 1.35rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+/* Kotakkan hari (Mon, Tue, ...) */
+#my-calendar .vc-week__day {
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    padding: 0.5em 0 !important;
+    margin: 2px;
+    min-width: 2.2em;
+    min-height: 2.2em;
+    text-align: center;
+    font-weight: bold;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tanggal hari Minggu (kolom paling kanan) berwarna merah */
+#my-calendar [data-vc-date][data-vc-date-week-day="0"] > [data-vc-date-btn] {
+    color: #e53935 !important; /* merah */
+    font-weight: bold;
+}
+
+/* Hari Minggu (Sun) di header kalender berwarna merah */
+#my-calendar .vc-week__day[data-vc-week-day="0"] {
+    color: #e53935 !important;
+    font-weight: bold !important;
+}
+
+/* Hari (Mon, Tue, ...) lebih tebal dan rata tengah */
+#my-calendar [data-vc-week-day] {
+    font-weight: bold !important;
+    font-size: 1.05rem !important;
+    color: #222 !important;
+    text-align: center !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.3em 0 !important;
+}
+
+/* Rata tengah semua tanggal */
+#my-calendar [data-vc-date-btn] {
+    text-align: center !important;
+    justify-content: center !important;
+    align-items: center !important;
+    display: flex !important;
+    min-width: 2.2em;
+    min-height: 2.2em;
+    margin: 2px;
+}
+
+/* Tanggal di luar bulan aktif (overflow days) jadi pudar */
+#my-calendar [data-vc-date][data-vc-date-month="prev"] > [data-vc-date-btn],
+#my-calendar [data-vc-date][data-vc-date-month="next"] > [data-vc-date-btn] {
+    color: #bbb !important;
+    background: #fafafa !important;
+    border-style: dashed !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    font-weight: normal !important;
+    box-shadow: none !important;
+    filter: grayscale(1) brightness(1.2) !important;
+}
+
+/* Hover efek pada bulan dan tahun */
+#my-calendar .vc-month,
+#my-calendar .vc-year {
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    border-radius: 6px;
+    border: 1.5px solid transparent;
+    background: #fff;
+    color: #222;
+    font-weight: bold;
+    padding: 0.25em 0.8em;
+    cursor: pointer;
+}
+
+#my-calendar .vc-month:hover,
+#my-calendar .vc-year:hover {
+    background: #f4f4f4;
+    color: #333;
+    border-color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Kotakkan pilihan bulan dan tahun pada popup select */
+#my-calendar [data-vc-months-month],
+#my-calendar [data-vc-years-year] {
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    margin: 2px;
+    min-width: 2.2em;
+    min-height: 2.2em;
+    text-align: center;
+    font-weight: bold;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+/* Efek hover dan terpilih pada pilihan bulan/tahun */
+#my-calendar [data-vc-months-month]:hover,
+#my-calendar [data-vc-years-year]:hover,
+#my-calendar [data-vc-months-month][data-vc-months-month-selected],
+#my-calendar [data-vc-years-year][data-vc-years-year-selected] {
+    border-color: #333 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: #f4f4f4 !important;
+    color: #222 !important;
+}
+
+/* Paksa background-image panah vanilla-calendar-pro agar selalu hitam */
+.vc-arrow:before {
+    filter: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='15 18 9 12 15 6'/%3E%3C/svg%3E") !important;
+    background-size: 24px 24px !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    opacity: 1 !important;
+}
+.vc-arrow[data-vc-arrow="next"]:before {
+    transform: rotate(180deg);
+}
+
+.vc-arrow[data-vc-arrow="prev"]:before {
+    transform: rotate(0deg) !important;
+}
+
+/* Panah lebih besar dan lebih jelas */
+#my-calendar .vc-arrow {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50%;
+    background: #f4f4f4 !important;
+    border: 1.5px solid #d1d5db !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+}
+#my-calendar .vc-arrow:hover {
+    background: #e0e0e0 !important;
+    border-color: #333 !important;
+}
+
+/* Beri border kotak pada setiap tanggal di kalender */
+[data-vc-date-btn] {
+    border: 1.5px solid #d1d5db !important; /* abu-abu muda, bisa diganti */
+    border-radius: 6px !important;
+    background: #fff !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+/* Efek hover dan tanggal terpilih */
+[data-vc-date-btn]:hover,
+[data-vc-date][data-vc-date-selected] [data-vc-date-btn] {
+    border-color: #333 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+#calendar-time-info {
+    min-height: 1.5em;
+    transition: min-height 0.2s;
+}
+
+#btn-konfirmasi-booking {
+    background-color: #2563eb;      /* biru */
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    margin-top: 1.5rem;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+    outline: none;
+}
+
+#btn-konfirmasi-booking:hover,
+#btn-konfirmasi-booking:focus {
+    background-color: #d81d81;      /* biru lebih gelap saat hover */
+    box-shadow: 0 4px 16px rgba(37,99,235,0.15);
+}
+
+#btn-konfirmasi-booking:disabled {
+    background-color: #cbd5e1;      /* abu-abu */
+    color: #888;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+
+/* Tanggal penuh (disabled) transparan dan kuning */
+.vc-date__btn[aria-disabled="true"] {
+    background-color: rgba(255, 221, 51, 0.4); /* kuning transparan */
+    color: #b45309 !important; /* kuning gelap untuk teks */
+    border: 1.5px dashed #facc15 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transition: background 0.2s;
+}
+
+/* =============================================== */
+/* STYLE UNTUK TAMPILAN MOBILE (RESPONSIVE) */
+/* =============================================== */
+
+/* Terapkan ini untuk layar dengan lebar maksimal 768px */
+@media (max-width: 768px) {
+
+    /* 1. Perbaiki Konten Utama */
+    main {
+        margin: 20px auto; /* Kurangi margin di atas dan bawah */
+        padding: 0 15px; /* Kurangi padding di kiri dan kanan */
+    }
+
+    /* 2. Buat Navbar Lebih Ramping */
+    nav {
+        padding: 10px 15px;
+    }
+    nav ul {
+        gap: 15px; /* Kurangi jarak antar menu */
+    }
+    nav ul li a {
+        padding: 8px 10px;
+        font-size: 14px; /* Kecilkan font menu */
+    }
+    .cta-btn-masuk {
+        margin-right: 15px; /* Kurangi margin kanan tombol masuk */
+    }
+
+    /* 3. Tumpuk Konten di Halaman Depan */
+    .intro {
+        flex-direction: column; /* Ubah layout dari horizontal ke vertikal */
+        text-align: center;
+        min-height: auto; /* Hapus tinggi minimal */
+    }
+    .text-content {
+        width: 100%; /* Gunakan lebar penuh */
+        align-items: center; /* Tengahkan tombol */
+    }
+    .intro h1 {
+        font-size: 28px; /* Kecilkan font judul */
+    }
+    .intro p {
+        font-size: 16px; /* Kecilkan font paragraf */
+    }
+
+    /* 4. Perbaiki Layout Dashboard Pengguna */
+    .dashboard-content, .cat-section-header, .booking-section-header {
+        flex-direction: column; /* Tumpuk elemen menjadi vertikal */
+        align-items: flex-start; /* Ratakan ke kiri */
+        gap: 10px;
+    }
+
+    .cat-grid {
+        /* Memaksa grid untuk menampilkan satu kartu per baris */
+        grid-template-columns: 1fr; 
+    }
+
+    /* 5. Perbaiki Posisi Tombol Menu Samping */
+    .menu-btn {
+        top: 20px;
+        right: 20px;
+    }
 }

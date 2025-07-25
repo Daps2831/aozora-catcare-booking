@@ -6,12 +6,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     initSideMenu();
     initImagePreview();
+    initBookingCalendar();
     
-    // Untuk kalender, kita akan panggil VanillaCalendar langsung
-    // karena kita tidak lagi menggunakan 'import' dari Vite
-    if (typeof VanillaCalendar !== 'undefined') {
-        initBookingCalendar();
-    }
+   
 });
 
 
@@ -62,49 +59,79 @@ function initImagePreview() {
  */
 function initBookingCalendar() {
     const calendarEl = document.getElementById('my-calendar');
-    if (calendarEl) {
-        // Logika lengkap untuk fetch data dan inisialisasi kalender
+    const timeInfo = document.getElementById('calendar-time-info');
+    const btnKonfirmasi = document.getElementById('btn-konfirmasi-booking');
+    let selectedDate = null;
+
+    if (calendarEl && timeInfo && btnKonfirmasi) {
+        const calendar = new Calendar('#my-calendar', {
+            lang: 'en',
+            iso8601: true,
+            selectionDatesMode: 'single',
+            selected: { dates: [] },
+            controls: true,
+            months: {
+                long: [
+                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                ],
+                short: [
+                    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+                    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+                ],
+            },
+            weekdays: {
+                long: [
+                    'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
+                ],
+                short: [
+                    'Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'
+                ],
+            },
+            onClickDate(self) {
+                if (self.context.selectedDates.length > 0) {
+                    selectedDate = self.context.selectedDates[0];
+                    timeInfo.textContent = `Tanggal dipilih: ${selectedDate}`;
+                    btnKonfirmasi.disabled = false;
+                } else {
+                    selectedDate = null;
+                    timeInfo.textContent = '';
+                    btnKonfirmasi.disabled = true;
+                }
+            },
+            onClickDayDisabled(self) {
+                alert('Tanggal penuh, silakan pilih tanggal lain.');
+            },
+        });
+
+        // Fetch data, set disable, TANPA init ulang!
         const fetchAndRenderBookings = (month, year, calendar) => {
             fetch(`/api/monthly-bookings?month=${month}&year=${year}`)
                 .then(response => response.json())
                 .then(data => {
-                    const datesToMark = [];
                     const datesToDisable = [];
                     for (const date in data) {
                         const count = data[date];
-                        datesToMark.push({ date: date, note: `${count} kucing` });
                         if (count >= 10) datesToDisable.push(date);
                     }
-                    calendar.settings.dates = datesToMark;
-                    calendar.settings.range.disabled = datesToDisable;
-                    calendar.update();
-                })
-                .catch(error => console.error('Error fetching booking data:', error));
+                    // GUNAKAN disableDates di root, BUKAN settings.range.disabled!
+                    calendar.set({
+                        disableDates: datesToDisable
+                    });
+                });
         };
 
         const today = new Date();
-        const calendar = new VanillaCalendar(calendarEl, {
-            settings: {
-                lang: 'id',
-                iso8601: true,
-                range: { disablePast: true },
-                selection: { day: 'single' },
-                visibility: { daysOutside: false },
-            },
-            actions: {
-                clickDay(event, dates) {
-                    if (dates[0]) window.location.href = `/booking/create?date=${dates[0]}`;
-                },
-                clickMonth(event, month, year) {
-                   fetchAndRenderBookings(month + 1, year, calendar);
-                },
-                clickYear(event, year) {
-                    fetchAndRenderBookings(today.getMonth() + 1, year, calendar);
-                },
-            },
-        });
+        fetchAndRenderBookings(today.getMonth() + 1, today.getFullYear(), calendar);
 
         calendar.init();
-        fetchAndRenderBookings(today.getMonth() + 1, today.getFullYear(), calendar);
+
+        btnKonfirmasi.addEventListener('click', function() {
+            if (selectedDate) {
+                window.location.href = `/booking/create?date=${selectedDate}`;
+            } else {
+                alert('Silakan pilih tanggal terlebih dahulu!');
+            }
+        });
     }
 }

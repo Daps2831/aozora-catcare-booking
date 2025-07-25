@@ -74,7 +74,4 @@
     </section>
 @endsection
 
-{{-- TAMBAHKAN BLOK KODE INI DI BAGIAN PALING BAWAH --}}
-@section('scripts')  
-    <script src="{{ asset('js/script.js') }}"></script>
-@endsection
+

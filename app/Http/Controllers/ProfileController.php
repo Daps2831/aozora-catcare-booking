@@ -28,7 +28,7 @@ class ProfileController extends Controller
         $user = Auth::user();  // Ambil data user yang sedang login
 
         // Validasi data input
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'kontak' => 'required|string|max:20',
             'alamat' => 'required|string|max:255',
@@ -36,12 +36,27 @@ class ProfileController extends Controller
 
         // Update data user
         $user->update([
-            'name' => $request->name,
-            'kontak' => $request->kontak,
-            'alamat' => $request->alamat,
+            'name' => $validated['name'],
+            'kontak' => $validated['kontak'],
+            'alamat' => $validated['alamat'],
         ]);
+
+        // Update tabel customers (jika relasi ada)
+        if ($user->customer) {
+            $user->customer->update([
+                'name' => $validated['name'],
+                'kontak' => $validated['kontak'],
+                'alamat' => $validated['alamat'],
+            ]);
+        }
 
         // Redirect ke halaman profil dengan pesan sukses
         return redirect()->route('profile.show')->with('success', 'Profil berhasil diperbarui!');
+    }
+
+    public function riwayat()
+    {
+        $riwayatBookings = auth()->user()->bookings()->with(['layanan', 'kucings'])->latest()->get();
+        return view('customer.riwayat', compact('riwayatBookings'));
     }
 }

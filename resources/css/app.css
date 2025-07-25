@@ -866,19 +866,7 @@ form.profile-option {
     margin-top: 5px;
 }
 
-.btn-cancel {
-    background-color: #f30101;
-    color: #333;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    margin-left: 10px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-.btn-cancel:hover {
-    background-color: #b0b0b0;
-}
+
 
 /* Header kalender: bulan dan tahun di tengah, panah kiri-kanan */
 #my-calendar .vc-header {
@@ -1071,6 +1059,38 @@ form.profile-option {
     transition: min-height 0.2s;
 }
 
+/* Container pilihan alamat */
+.alamat-container {
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1.5px solid #e5e7eb;
+}
+
+/* Opsi radio alamat horizontal */
+.alamat-options {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+/* Label radio: bulat di samping teks */
+.alamat-radio {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.alamat-radio input[type="radio"] {
+    accent-color: #2563eb;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
 #btn-konfirmasi-booking {
     background-color: #2563eb;      /* biru */
     color: #fff;
@@ -1097,4 +1117,149 @@ form.profile-option {
     color: #888;
     cursor: not-allowed;
     box-shadow: none;
+}
+
+/* Tanggal penuh (disabled) transparan dan kuning */
+.vc-date__btn[aria-disabled="true"] {
+    background-color: rgba(255, 221, 51, 0.4); /* kuning transparan */
+    color: #b45309 !important; /* kuning gelap untuk teks */
+    border: 1.5px dashed #facc15 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transition: background 0.2s;
+}
+
+.btn-back {
+    background-color: #fff;
+    color: #2563eb;
+    border: 2px solid #2563eb;
+    border-radius: 6px;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+    display: inline-block;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.btn-back:hover,
+.btn-back:focus {
+    background-color: #2563eb;
+    color: #fff;
+    border-color: #1d4ed8;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.15);
+    text-decoration: none;
+}
+
+.btn-cancel {
+    background-color: #d20505e1;
+    color: #fefefe;
+    border: 2px solid #060606;
+    border-radius: 6px;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+    display: inline-block;
+    margin-top: 1rem;
+    text-align: center;
+}
+.btn-cancel:hover {
+    background-color: #888c95;
+    color: #fff;
+    border-color: #1d4ed8;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.15);
+    text-decoration: none;
+}
+
+/* Tombol Ganti Foto */
+#btn-ganti-foto {
+    background-color: #facc15;
+    color: #222;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(250,204,21,0.08);
+    outline: none;
+}
+
+#btn-ganti-foto:hover,
+#btn-ganti-foto:focus {
+    background-color: #fde047;
+    color: #111;
+    box-shadow: 0 4px 16px rgba(250,204,21,0.15);
+}
+
+/* =============================================== */
+/* STYLE UNTUK TAMPILAN MOBILE (RESPONSIVE) */
+/* =============================================== */
+
+/* Terapkan ini untuk layar dengan lebar maksimal 768px */
+@media (max-width: 768px) {
+
+    /* 1. Perbaiki Konten Utama */
+    main {
+        margin: 20px auto; /* Kurangi margin di atas dan bawah */
+        padding: 0 15px; /* Kurangi padding di kiri dan kanan */
+    }
+
+    /* 2. Buat Navbar Lebih Ramping */
+    nav {
+        padding: 10px 15px;
+    }
+    nav ul {
+        gap: 15px; /* Kurangi jarak antar menu */
+    }
+    nav ul li a {
+        padding: 8px 10px;
+        font-size: 14px; /* Kecilkan font menu */
+    }
+    .cta-btn-masuk {
+        margin-right: 15px; /* Kurangi margin kanan tombol masuk */
+    }
+
+    /* 3. Tumpuk Konten di Halaman Depan */
+    .intro {
+        flex-direction: column; /* Ubah layout dari horizontal ke vertikal */
+        text-align: center;
+        min-height: auto; /* Hapus tinggi minimal */
+    }
+    .text-content {
+        width: 100%; /* Gunakan lebar penuh */
+        align-items: center; /* Tengahkan tombol */
+    }
+    .intro h1 {
+        font-size: 28px; /* Kecilkan font judul */
+    }
+    .intro p {
+        font-size: 16px; /* Kecilkan font paragraf */
+    }
+
+    /* 4. Perbaiki Layout Dashboard Pengguna */
+    .dashboard-content, .cat-section-header, .booking-section-header {
+        flex-direction: column; /* Tumpuk elemen menjadi vertikal */
+        align-items: flex-start; /* Ratakan ke kiri */
+        gap: 10px;
+    }
+
+    .cat-grid {
+        /* Memaksa grid untuk menampilkan satu kartu per baris */
+        grid-template-columns: 1fr; 
+    }
+
+    /* 5. Perbaiki Posisi Tombol Menu Samping */
+    .menu-btn {
+        top: 20px;
+        right: 20px;
+    }
 }

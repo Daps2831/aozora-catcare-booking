@@ -79,3 +79,6 @@ Route::get('/booking', function () {
 // TAMBAHKAN DUA ROUTE INI UNTUK PROSES BOOKING
 Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+
+// Route untuk menampilkan halaman riwayat booking
+Route::get('/customer/riwayat', [BookingController::class, 'riwayat'])->name('customer.riwayat');

@@ -23,6 +23,8 @@
             <div class="form-group">
                 <label for="gambar-input">Ganti Foto Kucing</label>
                 <input type="file" id="gambar-input" name="gambar" accept="image/*">
+                <span id="file-name" style="display:none; margin-top:8px; font-weight:500;"></span>
+                <button type="button" id="btn-ganti-foto" style="display:none; margin-left:10px;">Ganti Foto</button>
                 @error('gambar')
                     <div class="error">{{ $message }}</div>
                 @enderror
@@ -51,12 +53,13 @@
 
             <div class="form-group">
                 <button type="submit" class="cta-btn-diteks">Simpan Perubahan</button>
-                </div>
+            </div>
+
+            <div class="form-group">
+                <a href="{{ route('user.dashboard') }}" class="btn-cancel">Batal</a>
+            </div>
+
         </form>
     </div>
 @endsection
 
-{{-- TAMBAHKAN BLOK KODE INI DI BAGIAN PALING BAWAH --}}
-@section('scripts')  
-    <script src="{{ asset('js/script.js') }}"></script>
-@endsection

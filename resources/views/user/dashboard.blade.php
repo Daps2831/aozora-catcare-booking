@@ -4,30 +4,7 @@
 @section('title', 'User Dashboard')
 @section('content')
 
-    {{-- =============================================== --}}
-    {{-- side menu --}}
-    {{-- =============================================== --}}
-
-    <div class="menu-btn" id="menu-btn">
-        <div class="bar"></div>
-        <div class="bar"></div>
-        <div class="bar"></div>
-    </div>
-
-    <div class="side-menu" id="side-menu">
-        <button class="close-btn" id="close-btn">X</button>
-
-        <div class="side-menu-content">
-             <a href="{{ route('profile.show') }}" class="profile-option">Profil Saya</a>
-             <a href="{{ url('/booking') }}" class="profile-option">Booking Jadwal</a>
-             <a href="#" class="profile-option">Riwayat Booking</a>
-             <form method="POST" action="{{ route('logout') }}" class="profile-option">
-                @csrf
-                <button type="submit" class="logout-button">Logout</button>
-             </form>
-        </div>
-    </div>
-
+  
     {{-- =============================================== --}}
     {{-- konten dashboard  --}}
     {{-- =============================================== --}}
@@ -70,7 +47,9 @@
                 <a href="{{ route('booking.index') }}" class="btn-booking-sekarang">Booking Sekarang</a>
             </div>
             <div class="booking-list">
-                @forelse($jadwalPengguna as $booking)
+               @forelse($jadwalPengguna->filter(function($booking) {
+                    return \Carbon\Carbon::parse($booking->tanggalBooking)->isFuture();
+                }) as $booking)
                     <div class="booking-item">
                         <p>
                             <strong>{{ $booking->layanan->namaLayanan }}</strong> untuk 

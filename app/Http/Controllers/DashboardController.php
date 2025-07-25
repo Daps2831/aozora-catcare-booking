@@ -37,7 +37,7 @@ class DashboardController extends Controller
         $kucingPengguna = Kucing::where('customer_id', $user->customer->id)->get();
         $jadwalPengguna = Booking::where('customer_id', $user->customer->id)
                                 ->where('statusBooking', '!=', 'Selesai')
-                                ->with(['kucing', 'layanan'])
+                                ->with(['kucings', 'layanan'])
                                 ->get();
         
         return view('user.dashboard', compact('user', 'kucingPengguna', 'jadwalPengguna'));

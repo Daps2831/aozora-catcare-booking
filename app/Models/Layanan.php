@@ -10,7 +10,9 @@ class Layanan extends Model
     use HasFactory;
 
     protected $fillable = [
-        'namaLayanan', 'deskripsi', 'harga', 'groomer',
+        'nama_layanan',
+        'harga',
+        'estimasi_pengerjaan_per_kucing',
     ];
 
     public function jadwalGrooming()

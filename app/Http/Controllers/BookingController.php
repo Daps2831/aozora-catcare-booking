@@ -29,7 +29,7 @@ class BookingController extends Controller
             ->whereMonth('tanggalBooking', $month)
             ->get()
             ->groupBy(function($date) {
-                return \Carbon\Carbon::parse($date->tanggalBooking)->format('Y-m-d'); // Kelompokkan berdasarkan tanggal
+                return Carbon::parse($date->tanggalBooking)->format('Y-m-d'); // Kelompokkan berdasarkan tanggal
             })
             ->map(function($dayBookings) {
                 return $dayBookings->sum('kucings_count'); // Jumlahkan total kucing dalam satu hari
@@ -57,9 +57,11 @@ class BookingController extends Controller
         // Validasi input dari form
         $validated = $request->validate([
             'tanggalBooking' => 'required|date',
+            'jamBooking' => 'required|string',
             'layanan_id' => 'required|exists:layanans,id',
             'kucing_ids' => 'required|array|min:1',
             'kucing_ids.*' => 'exists:kucings,id',
+            'alamatBooking' => 'required|string|max:255',
         ]);
 
         $tanggal = Carbon::parse($validated['tanggalBooking']);
@@ -83,14 +85,27 @@ class BookingController extends Controller
             'customer_id' => Auth::user()->customer->id,
             'layanan_id' => $validated['layanan_id'],
             'tanggalBooking' => $validated['tanggalBooking'],
+            'jamBooking' => $validated['jamBooking'], // <-- simpan jam di sini!
             'statusBooking' => 'Pending',
             'estimasi' => $estimasi,
+            'alamatBooking' => $validated['alamatBooking'], // Simpan alamat booking
         ]);
 
         // Hubungkan booking dengan kucing-kucing yang dipilih
         $booking->kucings()->attach($validated['kucing_ids']);
 
         return redirect()->route('user.dashboard')->with('success', 'Booking Anda berhasil dibuat!');
+    }
+
+    public function riwayat()
+    {
+        $user = auth()->user();
+        $customerId = $user->customer->id ?? $user->id;
+        $riwayatBookings = Booking::where('customer_id', $customerId)
+            ->with(['layanan', 'kucings'])
+            ->latest()
+            ->get();
+        return view('customer.riwayat', compact('riwayatBookings'));
     }
 }
 
