@@ -52,11 +52,22 @@
                 }) as $booking)
                     <div class="booking-item">
                         <p>
-                            <strong>{{ $booking->layanan->namaLayanan }}</strong> untuk 
-                            <strong>{{ $booking->kucings->pluck('nama_kucing')->join(', ') }}</strong>
+                            @foreach($booking->kucings as $kucing)
+                                <p>
+                                    <strong>{{ $kucing->nama_kucing }}</strong>
+                                    (Jenis: {{ $kucing->jenis }})<br>
+                                    Layanan: 
+                                    {{ $kucing->pivot->layanan_id 
+                                        ? optional(\App\Models\Layanan::find($kucing->pivot->layanan_id))->nama_layanan 
+                                        : '-' 
+                                    }}
+                                </p>
+                            @endforeach
                         </p>
                         <p class="booking-details">
                             Tanggal: {{ \Carbon\Carbon::parse($booking->tanggalBooking)->format('d F Y') }}
+                            <br>
+                            Alamat: {{ $booking->alamatBooking ?? '-' }}
                         </p>
                     </div>
                 @empty

@@ -10,7 +10,12 @@ class Booking extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_id', 'layanan_id', 'tanggalBooking','jamBooking', 'statusBooking','estimasi'
+        'customer_id',
+        'tanggalBooking',
+        'jamBooking',
+        'statusBooking',
+        'estimasi',
+        'alamatBooking' // <-- TAMBAHKAN BARIS INI
     ];
 
     public function customer()
@@ -20,7 +25,8 @@ class Booking extends Model
 
     public function kucings() // Ganti nama menjadi jamak (plural)
     {
-        return $this->belongsToMany(Kucing::class, 'booking_kucing');
+        // Tambahkan ->withPivot('layanan_id') untuk mengambil kolom layanan_id dari tabel pivot
+        return $this->belongsToMany(Kucing::class, 'booking_kucing')->withPivot('layanan_id');
     }
 
     public function layanan()

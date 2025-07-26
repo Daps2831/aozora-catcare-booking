@@ -11,12 +11,24 @@
         <div style="color: red; margin-bottom: 15px;">{{ session('error') }}</div>
     @endif
 
-    <form action="{{ route('booking.store') }}" method="POST">
+    @if ($errors->any())
+        {{-- Loop untuk setiap pesan error yang unik --}}
+        @foreach (array_unique($errors->all()) as $error)
+            {{-- Buat satu kontainer div untuk setiap pesan --}}
+            <div class="alert alert-danger">
+                {{ $error }}
+            </div>
+        @endforeach
+    @endif
+
+ 
+
+    <form id="booking-form" action="{{ route('booking.store') }}" method="POST">
         @csrf
         <input type="hidden" name="tanggalBooking" value="{{ $selectedDate }}">
         
         <div class="form-group" style="margin-bottom: 1rem;">
-            <label for="jamBooking">Pilih Jam Booking</label>
+            <label for="jamBookingManual">Pilih Jam Booking</label>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <input
                     type="range"
@@ -43,7 +55,7 @@
         </div>
 
         <div class="form-group alamat-container" style="margin-bottom: 1rem;">
-            <label for="alamatBooking">Alamat Booking</label>
+            <label for="alamatBookingInput">Alamat Booking</label>
             <div class="alamat-options">
                 <label class="alamat-radio">
                     <input type="radio" name="alamat_option" id="alamat_default" value="default" checked>
@@ -64,27 +76,51 @@
             >
         </div>
 
-        <div class="form-group">
-            <label for="layanan_id">Pilih Jenis Layanan</label>
-            <select name="layanan_id" id="layanan_id" class="form-control" required>
-                <option value="">-- Pilih Layanan --</option>
-                @foreach($layanans as $layanan)
-                    <option value="{{ $layanan->id }}">{{ $layanan->nama_layanan }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Pilih Kucing (bisa lebih dari satu)</label>
-            <div class="checkbox-group" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; max-height: 150px; overflow-y: auto;">
+        {{-- Container Pilih Kucing --}}
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <span style="font-weight:600; display: block; margin-bottom: 0.5rem;">Pilih Kucing (bisa lebih dari satu)</span>
+            
+            {{-- PASTIKAN DIV DI BAWAH INI MEMILIKI STYLE YANG LENGKAP --}}
+            <div class="checkbox-group" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; max-height: 300px; overflow-y: auto;">
+                
                 @forelse($kucings as $kucing)
-                    <div>
-                        <input type="checkbox" name="kucing_ids[]" value="{{ $kucing->id }}" id="kucing_{{ $kucing->id }}">
-                        <label for="kucing_{{ $kucing->id }}">{{ $kucing->nama_kucing }} (Jenis: {{ $kucing->jenis }})</label>
+                    {{-- Ini adalah container untuk satu baris kucing --}}
+                    <div class="kucing-item">
+                        
+                        {{-- KOLOM 1: Diberi lebar tetap 220px --}}
+                        <label class="kucing-info" for="kucing_{{ $kucing->id }}">
+                            <input type="checkbox" name="kucing_ids[]" value="{{ $kucing->id }}"
+                                id="kucing_{{ $kucing->id }}"
+                                class="kucing-checkbox"
+                                {{ in_array($kucing->id, old('kucing_ids', [])) ? 'checked' : '' }}>
+                            <img src="{{ $kucing->gambar ? asset('storage/' . $kucing->gambar) : asset('images/no-image-available.png') }}"
+                                alt="Foto {{ $kucing->nama_kucing }}">
+                            <span>{{ $kucing->nama_kucing }}</span>
+                        </label>
+
+                        {{-- KOLOM 2: Diberi lebar tetap 150px --}}
+                        <div class="kucing-jenis" >
+                            Jenis: {{ $kucing->jenis }}
+                        </div>
+
+                        {{-- KOLOM 3: Mengisi sisa ruang --}}
+                        <div class="layanan-container" id="layanan_container_{{ $kucing->id }}">
+                            <select name="layanan_per_kucing[{{ $kucing->id }}]" class="form-control">
+                                <option value="">-- Pilih Layanan --</option>
+                                @foreach($layanans as $layanan)
+                                    <option value="{{ $layanan->id }}"
+                                        {{ old('layanan_per_kucing.' . $kucing->id) == $layanan->id ? 'selected' : '' }}>
+                                        {{ $layanan->nama_layanan }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                     </div>
                 @empty
                     <p>Anda belum memiliki data kucing. <a href="{{ route('kucing.register') }}">Daftarkan kucing sekarang</a>.</p>
                 @endforelse
+
             </div>
         </div>
 

@@ -51,50 +51,84 @@ class BookingController extends Controller
         return view('booking.create', compact('selectedDate', 'user', 'kucings', 'layanans'));
     }
 
-    // Method untuk MENYIMPAN data booking
+    /**
+     * Method untuk MENYIMPAN data booking (Versi Lengkap dan Disempurnakan).
+     */
     public function store(Request $request)
     {
-        // Validasi input dari form
-        $validated = $request->validate([
-            'tanggalBooking' => 'required|date',
-            'jamBooking' => 'required|string',
-            'layanan_id' => 'required|exists:layanans,id',
-            'kucing_ids' => 'required|array|min:1',
-            'kucing_ids.*' => 'exists:kucings,id',
-            'alamatBooking' => 'required|string|max:255',
-        ]);
+        //dd($request->all()); // <-- TAMBAHKAN BARIS INI UNTUK DEBUG
+        // TAHAP 1: VALIDASI TERPUSAT
+        // Semua aturan validasi dan pesan kustom didefinisikan di awal.
+        $rules = [
+            'tanggalBooking'    => 'required|date',
+            'jamBooking'        => 'required|date_format:H:i',
+            'alamatBooking'     => 'required|string|max:255',
+            'kucing_ids'        => 'required|array|min:1',
+            'kucing_ids.*'      => 'exists:kucings,id', // Pastikan setiap ID kucing ada di tabel kucings
+            'layanan_per_kucing'=> 'required|array',
+            'layanan_per_kucing.*' => 'required|integer|exists:layanans,id',
+        ];
 
-        $tanggal = Carbon::parse($validated['tanggalBooking']);
-        $jumlahKucingBaru = count($validated['kucing_ids']);
+        $messages = [
+            'kucing_ids.required'           => 'Anda harus memilih setidaknya satu kucing untuk booking.',
+            'kucing_ids.min'                => 'Anda harus memilih setidaknya satu kucing untuk booking.',
+            'layanan_per_kucing.*.required' => 'Silakan pilih layanan untuk setiap kucing yang dicentang.',
+            'layanan_per_kucing.*.exists'   => 'Layanan yang Anda pilih tidak valid.',
+        ];
 
-        // Validasi batas 10 kucing per hari
+        $validatedData = $request->validate($rules, $messages);
+
+
+        // TAHAP 2: VALIDASI LOGIKA BISNIS (KUOTA HARIAN)
+        // Dilakukan setelah validasi dasar berhasil untuk efisiensi.
+        $tanggal = Carbon::parse($validatedData['tanggalBooking']);
+        $jumlahKucingBaru = count($validatedData['kucing_ids']);
+
         $kucingTerdaftarHariIni = Booking::whereDate('tanggalBooking', $tanggal)
                                         ->withCount('kucings')
                                         ->get()
                                         ->sum('kucings_count');
 
         if (($kucingTerdaftarHariIni + $jumlahKucingBaru) > 10) {
-            return back()->with('error', 'Maaf, kuota booking untuk tanggal ini sudah penuh.');
+            return back()->with('error', 'Maaf, kuota booking untuk tanggal yang dipilih sudah penuh atau tidak mencukupi.')->withInput();
         }
 
-        // Hitung estimasi (contoh: 60 menit dasar + 15 menit per kucing)
-        $estimasi = 60 + ($jumlahKucingBaru * 15);
 
-        // Buat booking baru
-        $booking = Booking::create([
-            'customer_id' => Auth::user()->customer->id,
-            'layanan_id' => $validated['layanan_id'],
-            'tanggalBooking' => $validated['tanggalBooking'],
-            'jamBooking' => $validated['jamBooking'], // <-- simpan jam di sini!
-            'statusBooking' => 'Pending',
-            'estimasi' => $estimasi,
-            'alamatBooking' => $validated['alamatBooking'], // Simpan alamat booking
-        ]);
+        // TAHAP 3: PENYIMPANAN DATA DENGAN TRANSAKSI
+        // Memastikan semua data berhasil disimpan atau tidak sama sekali.
+        DB::beginTransaction();
+        try {
+            $booking = Booking::create([
+                'customer_id'   => Auth::user()->customer->id,
+                'tanggalBooking'=> $validatedData['tanggalBooking'],
+                'jamBooking'    => $validatedData['jamBooking'],
+                'alamatBooking' => $validatedData['alamatBooking'],
+                'statusBooking' => 'Pending',
+                'estimasi'      => 90, // Anda bisa menambahkan logika perhitungan estimasi di sini
+            ]);
 
-        // Hubungkan booking dengan kucing-kucing yang dipilih
-        $booking->kucings()->attach($validated['kucing_ids']);
+            // Siapkan data untuk tabel pivot `booking_kucing`
+            $pivotData = [];
+            foreach ($validatedData['kucing_ids'] as $kucingId) {
+                // Ambil layanan_id yang sesuai dari array layanan_per_kucing
+                $layananId = $validatedData['layanan_per_kucing'][$kucingId];
+                $pivotData[$kucingId] = ['layanan_id' => $layananId];
+            }
 
-        return redirect()->route('user.dashboard')->with('success', 'Booking Anda berhasil dibuat!');
+            // Simpan relasi ke tabel pivot dalam satu perintah
+            $booking->kucings()->attach($pivotData);
+
+            DB::commit(); // Konfirmasi semua operasi database jika berhasil
+
+        } catch (\Exception $e) {
+            DB::rollBack(); // Batalkan semua operasi jika terjadi kesalahan
+
+            // Mengembalikan pengguna dengan pesan error umum
+            return redirect()->back()->with('error', 'Terjadi kesalahan pada sistem saat membuat booking. Silakan coba lagi.')->withInput();
+        }
+
+        // TAHAP 4: REDIRECT SETELAH SUKSES
+        return redirect()->route('user.dashboard')->with('success', 'Booking Anda telah berhasil dibuat!');
     }
 
     public function riwayat()
