@@ -1220,29 +1220,48 @@ form.profile-option {
 }
 
 /* ======================================================= */
-/* === GANTI SEMUA STYLE KUCING ITEM DENGAN BLOK INI === */
+/* === KODE BARU DAN LAMA DIGABUNGKAN UNTUK KEMUDAHAN === */
 /* ======================================================= */
 
-/* Container untuk setiap baris, sekarang menggunakan GRID */
+/* Container untuk setiap baris, baik header maupun data */
 .kucing-item {
     display: grid;
-    /* Definisikan 3 kolom utama: Kolom Nama | Kolom Jenis | Kolom Layanan */
     grid-template-columns: 220px 150px 1fr;
-    gap: 1rem; /* Jarak antar kolom utama */
+    gap: 1rem;
     align-items: center;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0; /* Garis bawah tipis untuk setiap baris data */
 }
+
+/* Rule khusus untuk baris header */
+.header-row {
+    border-bottom: 2px solid #ccc; /* Garis bawah tebal HANYA untuk header */
+    padding-bottom: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* --- KODE BARU UNTUK GARIS KOLOM --- */
+/* Memberi garis di sisi kanan pada kolom 1 dan 2 */
+.kucing-item .kucing-info,
+.kucing-item .kucing-jenis {
+    padding-right: 1rem; /* Memberi jarak antara konten dan garis */
+    border-right: 1px solid #e0e0e0; /* Garis vertikal pembatas */
+    height: 100%; /* Memastikan garis memiliki tinggi penuh */
+    display: flex; /* Menggunakan flex untuk perataan vertikal di dalam sel */
+    align-items: center;
+}
+/* ------------------------------------ */
 
 /* Kolom 1: Kita buat menjadi grid juga untuk merapikan isinya */
 .kucing-item .kucing-info {
     display: grid;
-    /* Definisikan kolom di dalamnya: Checkbox | Gambar | Nama */
     grid-template-columns: 20px 50px 1fr;
-    gap: 0.75rem; /* Jarak antara checkbox, gambar, nama */
+    gap: 0.75rem;
     align-items: center;
     font-weight: 600;
     cursor: pointer;
+    border-right: 1px solid #e0e0e0; /* Pastikan rule ini ada */
+    padding-right: 1rem;
 }
 
 .kucing-item .kucing-info img {
@@ -1252,10 +1271,32 @@ form.profile-option {
     border-radius: 8px;
 }
 
-/* Kolom 2 dan 3 tidak memerlukan style khusus lagi, karena sudah diatur oleh grid utama */
+/* Kolom 2: Jenis Kucing */
 .kucing-item .kucing-jenis {
     font-size: 0.9em;
     color: #555;
+    /* width & flex-shrink tidak lagi diperlukan */
+}
+
+/* Teks header di dalam kolom */
+.header-row .kucing-info,
+.header-row .kucing-jenis,
+.header-row .layanan-container {
+    font-size: 0.9em;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: bold;
+    border-right: 1px solid #e0e0e0;
+}
+
+/* Header untuk kolom terakhir tidak perlu garis */
+.header-row .layanan-container {
+    border-right: none;
+}
+
+/* Teks "Gambar" di header */
+.header-row .kucing-info span {
+    margin-left: 60px;
 }
 
 /* =============================================== */

@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initHours();
     initKucingchecked();
     validateBookingForm();
+    initSelectAll();
 });
 
 /**
@@ -335,4 +336,44 @@ function validateBookingForm() {
             }
         }
     });
+}
+
+// Fungsi untuk fitur "Pilih Semua" kucing
+function initSelectAll() {
+    const selectAllCheckbox = document.getElementById('select-all-kucing');
+    const kucingCheckboxes = document.querySelectorAll('.kucing-checkbox');
+
+    // Jika elemen tidak ada di halaman ini, hentikan fungsi
+    if (!selectAllCheckbox || kucingCheckboxes.length === 0) return;
+
+    // 1. Logika saat checkbox "Pilih Semua" diklik
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        kucingCheckboxes.forEach(checkbox => {
+            if (checkbox.checked !== isChecked) {
+                checkbox.checked = isChecked;
+                // PENTING: Picu event 'change' agar dropdown layanan muncul/hilang
+                checkbox.dispatchEvent(new Event('change'));
+            }
+        });
+    });
+
+    // 2. Logika untuk mengubah status "Pilih Semua" jika semua checkbox individu dicentang
+    const updateTotal = () => {
+        const totalChecked = document.querySelectorAll('.kucing-checkbox:checked').length;
+        // Indeterminate state jika ada yang dipilih tapi tidak semua
+        if (totalChecked > 0 && totalChecked < kucingCheckboxes.length) {
+            selectAllCheckbox.indeterminate = true;
+        } else {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = totalChecked === kucingCheckboxes.length;
+        }
+    };
+
+    kucingCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateTotal);
+    });
+
+    // Panggil sekali saat load untuk inisialisasi
+    updateTotal();
 }

@@ -80,14 +80,29 @@
         <div class="form-group" style="margin-top: 1.5rem;">
             <span style="font-weight:600; display: block; margin-bottom: 0.5rem;">Pilih Kucing (bisa lebih dari satu)</span>
             
-            {{-- PASTIKAN DIV DI BAWAH INI MEMILIKI STYLE YANG LENGKAP --}}
             <div class="checkbox-group" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; max-height: 300px; overflow-y: auto;">
                 
+                {{-- ======================================================= --}}
+                {{-- ============ BAGIAN BARU: HEADER KOLOM ================ --}}
+                {{-- ======================================================= --}}
+                <div class="kucing-item header-row" style="padding-bottom: 0.5rem; margin-bottom: 0.5rem; font-weight: bold; color: #333;">
+                    <div class="kucing-info">
+                        <label for="select-all-kucing" style="cursor: pointer; display: flex; align-items: center; gap: 0.75rem;">
+                            <input type="checkbox" id="select-all-kucing" style="vertical-align: middle;">
+                            <span>Gambar</span>
+                        </label>
+                    </div>
+                    <div class="kucing-jenis">Jenis Kucing</div>
+                    <div class="layanan-container">Layanan</div>
+                </div>
+                {{-- ======================================================= --}}
+                {{-- ================== AKHIR BAGIAN BARU ================== --}}
+                {{-- ======================================================= --}}
+
                 @forelse($kucings as $kucing)
-                    {{-- Ini adalah container untuk satu baris kucing --}}
                     <div class="kucing-item">
                         
-                        {{-- KOLOM 1: Diberi lebar tetap 220px --}}
+                        {{-- KOLOM 1: Checkbox, Gambar, dan Nama Kucing --}}
                         <label class="kucing-info" for="kucing_{{ $kucing->id }}">
                             <input type="checkbox" name="kucing_ids[]" value="{{ $kucing->id }}"
                                 id="kucing_{{ $kucing->id }}"
@@ -98,14 +113,14 @@
                             <span>{{ $kucing->nama_kucing }}</span>
                         </label>
 
-                        {{-- KOLOM 2: Diberi lebar tetap 150px --}}
-                        <div class="kucing-jenis" >
-                            Jenis: {{ $kucing->jenis }}
+                        {{-- KOLOM 2: Jenis Kucing --}}
+                        <div class="kucing-jenis">
+                            {{ $kucing->jenis }}
                         </div>
 
-                        {{-- KOLOM 3: Mengisi sisa ruang --}}
-                        <div class="layanan-container" id="layanan_container_{{ $kucing->id }}">
-                            <select name="layanan_per_kucing[{{ $kucing->id }}]" class="form-control">
+                        {{-- KOLOM 3: Dropdown Layanan --}}
+                        <div class="layanan-container" id="layanan_container_{{ $kucing->id }}" style="{{ in_array($kucing->id, old('kucing_ids', [])) ? '' : 'display:none;' }}">
+                            <select name="layanan_per_kucing[{{ $kucing->id }}]" class="form-control" style="min-width:160px;">
                                 <option value="">-- Pilih Layanan --</option>
                                 @foreach($layanans as $layanan)
                                     <option value="{{ $layanan->id }}"
