@@ -5,7 +5,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KucingController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BookingController; 
+use App\Http\Controllers\BookingController;
+
 
 // Halaman Beranda
 Route::get('/', function () {
@@ -44,9 +45,6 @@ Route::get('/pageinfo', function () {
 // Route untuk halaman dashboard user biasa
 Route::middleware(['auth'])->get('/user/dashboard', [DashboardController::class, 'userDashboard'])->name('user.dashboard');
 
-// Route untuk halaman dashboard admin
-Route::middleware(['auth', 'admin'])->get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
-
 // Route untuk menampilkan profil
 Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
 
@@ -82,3 +80,18 @@ Route::post('/booking', [BookingController::class, 'store'])->name('booking.stor
 
 // Route untuk menampilkan halaman riwayat booking
 Route::get('/customer/riwayat', [BookingController::class, 'riwayat'])->name('customer.riwayat');
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    
+    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    // Kelola Booking
+    Route::get('/bookings', [Admin\BookingController::class, 'index'])->name('bookings');
+    Route::get('/bookings/{booking}', [Admin\BookingController::class, 'show'])->name('bookings.show');
+    Route::put('/bookings/{booking}/status', [Admin\BookingController::class, 'updateStatus'])->name('bookings.updateStatus');
+    // Kelola Layanan
+    Route::resource('layanan', Admin\LayananController::class);
+    // Kelola User
+    Route::resource('users', Admin\UserController::class);
+    // Laporan
+    Route::get('/reports', [Admin\ReportController::class, 'index'])->name('reports');
+});

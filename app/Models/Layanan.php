@@ -19,4 +19,16 @@ class Layanan extends Model
     {
         return $this->hasMany(JadwalGrooming::class);
     }
+
+    public function bookings()
+    {
+        return $this->belongsToMany(
+            \App\Models\Booking::class,
+            'booking_kucing',      // nama tabel pivot
+            'layanan_id',          // foreign key di tabel pivot untuk layanan
+            'booking_id'           // foreign key di tabel pivot untuk booking
+        );
+    }
+
+    
 }

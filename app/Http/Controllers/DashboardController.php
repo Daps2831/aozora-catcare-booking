@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $bookingHariIni = Booking::whereDate('tanggalBooking', today())->count();
 
         // Data untuk Tabel
-        $jadwalTerbaru = Booking::with(['customer', 'kucing', 'layanan'])->latest()->take(5)->get();
+        $jadwalTerbaru = Booking::with(['customer', 'kucings', 'layanan'])->latest()->take(5)->get();
         $pelangganBaru = User::where('role', 'user')->latest()->take(5)->get();
 
         return view('admin.dashboard', compact('user', 'jumlahPelanggan', 'jumlahKucing', 'bookingHariIni', 'jadwalTerbaru', 'pelangganBaru'));
