@@ -85,13 +85,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     // Kelola Booking
-    Route::get('/bookings', [Admin\BookingController::class, 'index'])->name('bookings');
-    Route::get('/bookings/{booking}', [Admin\BookingController::class, 'show'])->name('bookings.show');
-    Route::put('/bookings/{booking}/status', [Admin\BookingController::class, 'updateStatus'])->name('bookings.updateStatus');
+    Route::get('/bookings', [App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings');
+    Route::get('/bookings/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'show'])->name('bookings.show');
+    Route::put('/bookings/{booking}/status', [App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('bookings.updateStatus');
     // Kelola Layanan
-    Route::resource('layanan', Admin\LayananController::class);
+    Route::resource('layanan', App\Http\Controllers\Admin\LayananController::class);
     // Kelola User
-    Route::resource('users', Admin\UserController::class);
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    // Kelola Tim Groomer
+    Route::resource('groomer', App\Http\Controllers\Admin\GroomerController::class);
     // Laporan
-    Route::get('/reports', [Admin\ReportController::class, 'index'])->name('reports');
+    Route::get('/reports', [App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports');
 });

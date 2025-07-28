@@ -123,73 +123,17 @@
 
 @section('js')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ asset('js/script.js') }}"></script>
 <script>
-const allLabels = {
-    7: {!! json_encode($labels7 ?? $labels) !!},
-    30: {!! json_encode($labels30 ?? $labels) !!},
-    365: {!! json_encode($labels365 ?? $labels) !!}
-};
-const allData = {
-    7: {!! json_encode($data7 ?? $data) !!},
-    30: {!! json_encode($data30 ?? $data) !!},
-    365: {!! json_encode($data365 ?? $data) !!}
-};
-
-let chartType = 'bar';
-let chartPeriod = '7';
-
-function getDataset(type, period) {
-    return [{
-        label: 'Booking',
-        data: allData[period],
-        backgroundColor: type === 'bar' ? 'rgba(54, 162, 235, 0.5)' : 'rgba(0,0,0,0)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        fill: false, // agar line chart tidak terisi warna
-        tension: 0.3, // smooth line
-        pointRadius: type === 'line' ? 3 : 0
-    }];
-}
-
-var ctx = document.getElementById('bookingChart').getContext('2d');
-var myChart = new Chart(ctx, {
-    type: chartType,
-    data: {
-        labels: allLabels[chartPeriod],
-        datasets: getDataset(chartType, chartPeriod)
-    },
-    options: {
-        responsive: true
-    }
-});
-
-document.getElementById('chartType').addEventListener('change', function() {
-    chartType = this.value;
-    myChart.destroy();
-    myChart = new Chart(ctx, {
-        type: chartType,
-        data: {
-            labels: allLabels[chartPeriod],
-            datasets: getDataset(chartType, chartPeriod)
-        },
-        options: {
-            responsive: true
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        window.initBookingChart(
+            {!! json_encode($labels7 ?? $labels) !!},
+            {!! json_encode($labels30 ?? $labels) !!},
+            {!! json_encode($labels365 ?? $labels) !!},
+            {!! json_encode($data7 ?? $data) !!},
+            {!! json_encode($data30 ?? $data) !!},
+            {!! json_encode($data365 ?? $data) !!}
+        );
     });
-});
-
-document.getElementById('chartPeriod').addEventListener('change', function() {
-    chartPeriod = this.value;
-    myChart.destroy();
-    myChart = new Chart(ctx, {
-        type: chartType,
-        data: {
-            labels: allLabels[chartPeriod],
-            datasets: getDataset(chartType, chartPeriod)
-        },
-        options: {
-            responsive: true
-        }
-    });
-});
 </script>
 @stop
