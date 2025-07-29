@@ -92,8 +92,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('layanan', App\Http\Controllers\Admin\LayananController::class);
     // Kelola User
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
-    // Kelola Tim Groomer
+    // Kelola  Groomer   
     Route::resource('groomer', App\Http\Controllers\Admin\GroomerController::class);
+    // Kelola  Tim Groomer  
+    Route::resource('tim-groomer', App\Http\Controllers\Admin\TimGroomerController::class);
     // Laporan
     Route::get('/reports', [App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports');
 });

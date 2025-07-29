@@ -340,8 +340,13 @@ return [
             'icon' => 'fas fa-users',
         ],
         [
-            'text' => 'Kelola Tim Grooming',
+            'text' => 'Kelola Groomer',
             'url'  => 'admin/groomer',
+            'icon' => 'fas fa-users',
+        ],
+        [
+            'text' => 'Kelola Tim Grooming',
+            'url'  => 'admin/tim-groomer',
             'icon' => 'fas fa-users',
         ],
         [

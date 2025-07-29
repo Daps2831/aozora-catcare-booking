@@ -54,4 +54,5 @@ class GroomerController extends Controller
         $groomer->delete();
         return redirect()->route('admin.groomer.index')->with('success', 'Groomer berhasil dihapus');
     }
+
 }
