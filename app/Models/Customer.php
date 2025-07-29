@@ -18,12 +18,12 @@ class Customer extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 
     public function kucings()
     {
-        return $this->hasMany(Kucing::class);
+        return $this->hasMany(\App\Models\Kucing::class, 'customer_id');
     }
 
     public function chatbot()

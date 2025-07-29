@@ -23,14 +23,18 @@ Route::get('/contact', function () {
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
 
 // Route untuk menangani login
-Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:5,1')
+    ->name('login.submit');
+    
 // Halaman Register
 // Route untuk menampilkan form registrasi
 Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register.form');
 
 // Route untuk menangani form registrasi setelah di-submit
-Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+Route::post('/register', [AuthController::class, 'register'])
+    ->middleware('throttle:5,1')
+    ->name('register.submit');
 
 // Halaman Layanan
 Route::get('/service', function () {
@@ -98,4 +102,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('tim-groomer', App\Http\Controllers\Admin\TimGroomerController::class);
     // Laporan
     Route::get('/reports', [App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports');
+});
+
+Route::prefix('admin/users/{user}/kucing')->name('admin.users.kucing.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('create', [App\Http\Controllers\Admin\KucingUserController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\Admin\KucingUserController::class, 'store'])->name('store');
+    Route::get('{kucing}/edit', [App\Http\Controllers\Admin\KucingUserController::class, 'edit'])->name('edit');
+    Route::put('{kucing}', [App\Http\Controllers\Admin\KucingUserController::class, 'update'])->name('update');
+    Route::delete('{kucing}', [App\Http\Controllers\Admin\KucingUserController::class, 'destroy'])->name('destroy');
 });

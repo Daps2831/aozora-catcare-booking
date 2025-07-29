@@ -33,9 +33,9 @@ class User extends Authenticatable
     protected $dates = ['deleted_at'];
 
     // Relasi dengan tabel Customer
-    public function customer()
+    public function customer() 
     {
-        return $this->hasOne(Customer::class);
+        return $this->hasOne(Customer::class, 'user_id');
     }
 
     // Relasi dengan tabel Admin
@@ -91,5 +91,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Booking::class, 'customer_id', 'id');
     }
+
+    public function kucings()
+    {
+        return $this->hasMany(\App\Models\Kucing::class, 'user_id');
+    }
+
+   
 }
 

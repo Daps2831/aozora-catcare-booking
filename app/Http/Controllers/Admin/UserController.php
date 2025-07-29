@@ -55,6 +55,7 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
+        $user = User::findOrFail($id);
         return view('admin.users.edit', compact('user'));
     }
 
@@ -62,14 +63,15 @@ class UserController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-    {
-        $validated = $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-        ]);
-        $user->update($validated);
-        return redirect()->route('admin.users.index')->with('success', 'User berhasil diupdate');
-    }
+{
+    $user = User::findOrFail($id);
+    $validated = $request->validate([
+        'name' => 'required',
+        'email' => 'required|email|unique:users,email,'.$user->id,
+    ]);
+    $user->update($validated);
+    return redirect()->route('admin.users.index')->with('success', 'User berhasil diupdate');
+}
 
     /**
      * Remove the specified resource from storage.

@@ -108,7 +108,7 @@
 </div>
 
 {{-- Pendapatan --}}
-<div class="card">
+<div class="card mb-0">
     <div class="card-header"><b>Total Pendapatan</b></div>
     <div class="card-body">
         <h4>Rp {{ number_format($totalPendapatan,0,',','.') }}</h4>
@@ -117,6 +117,9 @@
                 <li>{{ $nama }}: Rp {{ number_format($nominal,0,',','.') }}</li>
             @endforeach
         </ul>
+    </div>
+    <div class="card-footer text-center">
+        <strong>&copy; {{ date('Y') }} Aozora.</strong> All rights reserved.
     </div>
 </div>
 @stop
