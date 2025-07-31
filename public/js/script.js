@@ -6,12 +6,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     initSideMenu();
     initImagePreview();
-    initBookingCalendar();
     initAddress();
     initHours();
     initKucingchecked();
     validateBookingForm();
     initSelectAll();
+    initFullCalendar();
     
    
 });
@@ -59,87 +59,89 @@ function initImagePreview() {
     }
 }
 
-/**
- * Inisialisasi kalender booking.
- */
-function initBookingCalendar() {
-    const calendarEl = document.getElementById('my-calendar');
+function initFullCalendar() {
+    const calendarEl = document.getElementById('calendar');
+    if (!calendarEl || typeof FullCalendar === "undefined") return;
+
     const timeInfo = document.getElementById('calendar-time-info');
     const btnKonfirmasi = document.getElementById('btn-konfirmasi-booking');
     let selectedDate = null;
 
-    if (calendarEl && timeInfo && btnKonfirmasi) {
-        const calendar = new Calendar('#my-calendar', {
-            lang: 'en',
-            iso8601: true,
-            selectionDatesMode: 'single',
-            selected: { dates: [] },
-            controls: true,
-            months: {
-                long: [
-                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                ],
-                short: [
-                    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-                    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
-                ],
-            },
-            weekdays: {
-                long: [
-                    'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
-                ],
-                short: [
-                    'Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'
-                ],
-            },
-            onClickDate(self) {
-                if (self.context.selectedDates.length > 0) {
-                    selectedDate = self.context.selectedDates[0];
-                    timeInfo.textContent = `Tanggal dipilih: ${selectedDate}`;
-                    btnKonfirmasi.disabled = false;
-                } else {
-                    selectedDate = null;
-                    timeInfo.textContent = '';
-                    btnKonfirmasi.disabled = true;
-                }
-            },
-            onClickDayDisabled(self) {
-                alert('Tanggal penuh, silakan pilih tanggal lain.');
-            },
-        });
-
-        // Fetch data, set disable, TANPA init ulang!
-        const fetchAndRenderBookings = (month, year, calendar) => {
-            fetch(`/api/monthly-bookings?month=${month}&year=${year}`)
-                .then(response => response.json())
-                .then(data => {
-                    const datesToDisable = [];
-                    for (const date in data) {
-                        const count = data[date];
-                        if (count >= 10) datesToDisable.push(date);
-                    }
-                    // GUNAKAN disableDates di root, BUKAN settings.range.disabled!
-                    calendar.set({
-                        disableDates: datesToDisable
-                    });
-                });
-        };
-
-        const today = new Date();
-        fetchAndRenderBookings(today.getMonth() + 1, today.getFullYear(), calendar);
-
-        calendar.init();
-
-        btnKonfirmasi.addEventListener('click', function() {
-            if (selectedDate) {
-                window.location.href = `/booking/create?date=${selectedDate}`;
-            } else {
-                alert('Silakan pilih tanggal terlebih dahulu!');
-            }
-        });
+    // Ambil data fullDates dan events dari atribut data-* pada elemen #calendar
+    let fullDates = [];
+    let events = [];
+    if (calendarEl.dataset.fullDates) {
+        try { fullDates = JSON.parse(calendarEl.dataset.fullDates); } catch (e) { fullDates = []; }
     }
+    if (calendarEl.dataset.events) {
+        try { events = JSON.parse(calendarEl.dataset.events); } catch (e) { events = []; }
+    }
+    const today = new Date().toISOString().split('T')[0];
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'id',
+        selectable: true,
+        events: events,
+        eventContent: function(arg) {
+            // Custom tampilan event: jam booking - jam selesai
+            let title = arg.event.title;
+            return {
+                html: `<div style="background:#e0e7ff;color:#3730a3;padding:2px 6px;border-radius:8px;font-size:12px;margin-top:2px;display:inline-block">${title}</div>`
+            };
+        },
+        selectAllow: function(selectInfo) {
+            const dateStr = selectInfo.startStr;
+            return dateStr >= today && !fullDates.includes(dateStr);
+        },
+        dateClick: function(info) {
+            const dateStr = info.dateStr;
+            const clickedMonth = info.date.getMonth();
+            const currentMonth = calendar.getDate().getMonth();
+
+            if (clickedMonth !== currentMonth) {
+                calendar.gotoDate(info.date);
+                setTimeout(() => {
+                    calendar.select(info.date);
+                }, 10);
+            } else {
+                calendar.select(info.date);
+            }
+
+            if (dateStr < today) {
+                timeInfo.textContent = '';
+                btnKonfirmasi.disabled = true;
+                return;
+            }
+            if (fullDates.includes(dateStr)) {
+                timeInfo.textContent = 'Tanggal penuh, silakan pilih tanggal lain.';
+                btnKonfirmasi.disabled = true;
+                return;
+            }
+            selectedDate = dateStr;
+            timeInfo.textContent = 'Tanggal dipilih: ' + dateStr;
+            btnKonfirmasi.disabled = false;
+        },
+        dayCellDidMount: function(arg) {
+            const dateStr = arg.date.toISOString().split('T')[0];
+            if (dateStr < today || fullDates.includes(dateStr)) {
+                arg.el.classList.add('fc-day-disabled');
+                arg.el.style.background = '#eee';
+                arg.el.style.cursor = 'not-allowed';
+            }
+        }
+    });
+    calendar.render();
+
+    btnKonfirmasi.addEventListener('click', function () {
+        if (selectedDate) {
+            window.location.href = `/booking/create?date=${selectedDate}`;
+        } else {
+            alert("Silakan pilih tanggal terlebih dahulu!");
+        }
+    });
 }
+
 
 //fungsi alamat
 function initAddress() {

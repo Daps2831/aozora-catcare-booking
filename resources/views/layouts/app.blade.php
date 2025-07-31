@@ -16,6 +16,7 @@
     ])
 
     @yield('styles')
+    @yield('css') 
 </head>
 <body>
  
@@ -49,7 +50,8 @@
     </main>
 
     @include('partials.footer')
-
+    
+    @yield('js')
     @yield('scripts')
 </body>
 </html>

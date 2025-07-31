@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use PHPUnit\Framework\MockObject\Generator\NameAlreadyInUseException;
 
 class TimGroomer extends Model
 {
@@ -12,6 +13,7 @@ class TimGroomer extends Model
     protected $primaryKey = 'id_tim';
 
     protected $fillable = [
+        'nama_tim',
         'anggota_1',
         'anggota_2',
     ];

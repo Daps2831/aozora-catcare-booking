@@ -74,9 +74,7 @@ Route::get('/kucing/{kucing}/edit', [KucingController::class, 'edit'])->name('ku
 Route::put('/kucing/{kucing}', [KucingController::class, 'update'])->name('kucing.update');
 
 //t Route untuk Halaman Kalender
-Route::get('/booking', function () {
-    return view('booking.index');
-})->name('booking.index')->middleware('auth');
+Route::get('/booking', [BookingController::class, 'index'])->name('booking.index')->middleware('auth');
 
 // TAMBAHKAN DUA ROUTE INI UNTUK PROSES BOOKING
 Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');

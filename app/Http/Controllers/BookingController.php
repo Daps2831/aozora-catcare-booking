@@ -141,5 +141,44 @@ class BookingController extends Controller
             ->get();
         return view('customer.riwayat', compact('riwayatBookings'));
     }
+
+    public function index()
+    {
+        // Ambil semua booking
+        $bookings = Booking::all();
+
+        // Siapkan array untuk tanggal penuh (kuota >= 10)
+        $bookingsPerTanggal = Booking::withCount('kucings')
+            ->select('tanggalBooking')
+            ->get()
+            ->groupBy('tanggalBooking')
+            ->map(function($items) {
+                return $items->sum('kucings_count');
+            });
+
+        $fullDates = [];
+        foreach ($bookingsPerTanggal as $tanggal => $jumlah) {
+            if ($jumlah >= 10) $fullDates[] = $tanggal;
+        }
+
+        // Siapkan events untuk FullCalendar
+        $events = [];
+        foreach ($bookings as $booking) {
+            // Hitung jam selesai
+            $start = \Carbon\Carbon::parse($booking->tanggalBooking . ' ' . $booking->jamBooking);
+            $end = $start->copy()->addMinutes($booking->estimasi ?? 90);
+
+            $events[] = [
+                'title' => $start->format('H:i') . ' - ' . $end->format('H:i'),
+                'start' => $start->toDateTimeString(),
+                'end'   => $end->toDateTimeString(),
+            ];
+        }
+
+        return view('booking.index', [
+            'fullDates' => $fullDates,
+            'events'    => $events,
+        ]);
+    }
 }
 

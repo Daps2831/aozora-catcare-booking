@@ -10,6 +10,7 @@
     <thead>
         <tr>
             <th>ID Tim</th>
+            <th>Nama Tim</th> <!-- Tambahkan kolom ini -->
             <th>Anggota 1</th>
             <th>Anggota 2</th>
             <th>Aksi</th>
@@ -19,6 +20,7 @@
         @foreach($tim as $t)
         <tr>
             <td>{{ $t->id_tim }}</td>
+            <td>{{ $t->nama_tim }}</td> <!-- Tampilkan nama tim -->
             <td>{{ $t->anggota1->nama ?? '-' }}</td>
             <td>{{ $t->anggota2->nama ?? '-' }}</td>
             <td>

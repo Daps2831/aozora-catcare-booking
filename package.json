@@ -15,9 +15,10 @@
         "vite": "^6.2.4"
     },
     "dependencies": {
+        "@fullcalendar/core": "^5.11.5",
+        "@fullcalendar/daygrid": "^5.11.5",
         "admin-lte": "^4.0.0-rc4",
         "chart.js": "^4.5.0",
-        "vanilla-calendar": "^1.0.30",
-        "vanilla-calendar-pro": "^3.0.5"
+        "vanilla-calendar": "^1.0.30"
     }
 }

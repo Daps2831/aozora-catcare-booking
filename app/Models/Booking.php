@@ -26,11 +26,13 @@ class Booking extends Model
     public function kucings() // Ganti nama menjadi jamak (plural)
     {
         // Tambahkan ->withPivot('layanan_id') untuk mengambil kolom layanan_id dari tabel pivot
-        return $this->belongsToMany(Kucing::class, 'booking_kucing')->withPivot('layanan_id');
+        return $this->belongsToMany(Kucing::class, 'booking_kucing','booking_id', relatedPivotKey: 'kucing_id')->withPivot('layanan_id');
     }
 
     public function layanan()
     {
         return $this->belongsTo(Layanan::class);
     }
+
+    
 }

@@ -13,6 +13,7 @@
             <th>ID</th>
             <th>Nama Layanan</th>
             <th>Harga</th>
+            <th>Estimasi Pengerjaan per Kucing (menit)</th>
             <th>Aksi</th>
         </tr>
     </thead>
@@ -22,6 +23,7 @@
             <td>{{ $layanan->id }}</td>
             <td>{{ $layanan->nama_layanan }}</td>
             <td>{{ $layanan->harga }}</td>
+            <td>{{ $layanan->estimasi_pengerjaan_per_kucing }}</td>
             <td>
                 <a href="{{ route('admin.layanan.edit', $layanan->id) }}" class="btn btn-warning btn-sm">Edit</a>
                 <form action="{{ route('admin.layanan.destroy', $layanan->id) }}" method="POST" style="display:inline;">
