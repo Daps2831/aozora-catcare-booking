@@ -88,4 +88,21 @@ class KucingController extends Controller
 
         return redirect()->route('user.dashboard')->with('success', 'Data kucing berhasil diperbarui!');
     }
+
+    public function destroy(Kucing $kucing)
+    {
+        // Pastikan kucing ini milik user yang sedang login
+        if ($kucing->customer_id != auth()->user()->customer->id) {
+            abort(403, 'Akses Ditolak');
+        }
+
+        // Hapus gambar jika ada
+        if ($kucing->gambar) {
+            Storage::delete('public/' . $kucing->gambar);
+        }
+
+        $kucing->delete();
+
+        return redirect()->route('user.dashboard')->with('success', 'Data kucing berhasil dihapus!');
+    }
 }

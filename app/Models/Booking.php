@@ -34,5 +34,8 @@ class Booking extends Model
         return $this->belongsTo(Layanan::class);
     }
 
-    
+    public function tim() 
+    {
+        return $this->belongsTo(TimGroomer::class, 'tim_id', 'id_tim');     
+    }
 }

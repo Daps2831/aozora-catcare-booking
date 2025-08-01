@@ -100,18 +100,29 @@ function initFullCalendar() {
         locale: 'id',
         selectable: true,
         events: events,
+      
         eventContent: function(arg) {
-            // Custom tampilan event: jam booking - jam selesai
-            let title = arg.event.title;
+            // Ambil data dari event (karena dikirim via data-attribute, properti ada di arg.event)
+            let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
+            let namaTim = arg.event.extendedProps?.namaTim ?? arg.event.namaTim;
+
             return {
-                html: `<div style="background:#e0e7ff;color:#3730a3;padding:2px 6px;border-radius:8px;font-size:12px;margin-top:2px;display:inline-block">${title}</div>`
-            };
-        },
-        selectAllow: function(selectInfo) {
-            const dateStr = selectInfo.startStr;
-            return dateStr >= today && !fullDates.includes(dateStr);
-        },
-        dateClick: function(info) {
+                html: `
+                    <div style="background:#eaf1fb;border-radius:8px;padding:4px 8px;display:inline-block;">
+                        <div style="font-weight:bold;">${arg.event.title}</div>
+                        <div style="margin-top:2px;font-size:12px;">
+                            <span style="background:#3498db;color:#fff;border-radius:8px;padding:2px 6px;margin-right:4px;">${jumlahKucing} kucing</span>
+                            <span style="background:#2ecc71;color:#fff;border-radius:8px;padding:2px 6px;">${namaTim}</span>
+                        </div>
+                    </div>
+                `
+            }
+    },
+    selectAllow: function(selectInfo) {
+        const dateStr = selectInfo.startStr;
+        return dateStr >= today && !fullDates.includes(dateStr);
+    },
+    dateClick: function(info) {
             const dateStr = info.dateStr;
             const clickedMonth = info.date.getMonth();
             const currentMonth = calendar.getDate().getMonth();
@@ -141,12 +152,23 @@ function initFullCalendar() {
         },
         dayCellDidMount: function(arg) {
             const dateStr = arg.date.toISOString().split('T')[0];
+            // Cek jika tanggal disable
             if (dateStr < today || fullDates.includes(dateStr)) {
                 arg.el.classList.add('fc-day-disabled');
                 arg.el.style.background = '#eee';
                 arg.el.style.cursor = 'not-allowed';
+                return;
             }
-        }
+            // Handler klik pada seluruh cell tanggal (termasuk area event)
+            arg.el.addEventListener('click', function(e) {
+                selectedDate = dateStr;
+                timeInfo.textContent = 'Tanggal dipilih: ' + dateStr;
+                btnKonfirmasi.disabled = false;
+                // Highlight cell yang dipilih
+                document.querySelectorAll('.fc-daygrid-day.selected-date').forEach(el => el.classList.remove('selected-date'));
+                arg.el.classList.add('selected-date');
+            });
+        },
     });
     calendar.render();
 

@@ -69,6 +69,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Route untuk menampilkan halaman edit kucing
 Route::get('/kucing/{kucing}/edit', [KucingController::class, 'edit'])->name('kucing.edit');
+Route::delete('kucing/{kucing}', [KucingController::class, 'destroy'])->name('kucing.destroy');
 
 // Route untuk memproses pembaruan data kucing
 Route::put('/kucing/{kucing}', [KucingController::class, 'update'])->name('kucing.update');

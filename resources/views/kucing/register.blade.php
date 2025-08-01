@@ -66,8 +66,9 @@
                 </div>
 
                 <!-- Tombol Submit -->
-                <div class="form-group">
-                    <button type="submit" class="cta-btn-diteks">Daftar</button>
+                <div class="form-group" style="display:flex; gap:16px;">
+                    <button type="submit" class="cta-btn-diteks btn-form-kucing">Daftar</button>
+                    <a href="{{ route('user.dashboard') }}" class="btn-back btn-form-kucing">Kembali</a>
                 </div>
             </form>
         </div>

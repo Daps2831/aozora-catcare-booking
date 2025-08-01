@@ -4,8 +4,8 @@
         class="animation__shake rounded-circle shadow" 
         src="{{ asset('images/logo.png') }}" 
         alt="Aozora Logo" 
-        height="140" 
-        width="150"
+        height="180" 
+        width="200"
         style="object-fit:cover;"
     >
 </div>

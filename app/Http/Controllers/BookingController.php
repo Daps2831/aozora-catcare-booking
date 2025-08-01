@@ -98,13 +98,22 @@ class BookingController extends Controller
         // Memastikan semua data berhasil disimpan atau tidak sama sekali.
         DB::beginTransaction();
         try {
+            $totalEstimasi = 0;
+            foreach ($validatedData['kucing_ids'] as $kucingId) {
+                $layananId = $validatedData['layanan_per_kucing'][$kucingId];
+                $layanan = Layanan::find($layananId);
+                if ($layanan) {
+                    $totalEstimasi += (int) $layanan->estimasi_pengerjaan_per_kucing;
+                }
+            }
+
             $booking = Booking::create([
                 'customer_id'   => Auth::user()->customer->id,
                 'tanggalBooking'=> $validatedData['tanggalBooking'],
                 'jamBooking'    => $validatedData['jamBooking'],
                 'alamatBooking' => $validatedData['alamatBooking'],
                 'statusBooking' => 'Pending',
-                'estimasi'      => 90, // Anda bisa menambahkan logika perhitungan estimasi di sini
+                'estimasi'      => $totalEstimasi,
             ]);
 
             // Siapkan data untuk tabel pivot `booking_kucing`
@@ -143,42 +152,44 @@ class BookingController extends Controller
     }
 
     public function index()
-    {
-        // Ambil semua booking
-        $bookings = Booking::all();
+{
+    // Ambil semua booking beserta relasi kucings dan tim
+    $bookings = Booking::with(['kucings', 'tim'])->get();
 
-        // Siapkan array untuk tanggal penuh (kuota >= 10)
-        $bookingsPerTanggal = Booking::withCount('kucings')
-            ->select('tanggalBooking')
-            ->get()
-            ->groupBy('tanggalBooking')
-            ->map(function($items) {
-                return $items->sum('kucings_count');
-            });
+    // Siapkan array untuk tanggal penuh (kuota >= 10)
+    $bookingsPerTanggal = Booking::withCount('kucings')
+        ->select('tanggalBooking')
+        ->get()
+        ->groupBy('tanggalBooking')
+        ->map(function($items) {
+            return $items->sum('kucings_count');
+        });
 
-        $fullDates = [];
-        foreach ($bookingsPerTanggal as $tanggal => $jumlah) {
-            if ($jumlah >= 10) $fullDates[] = $tanggal;
-        }
-
-        // Siapkan events untuk FullCalendar
-        $events = [];
-        foreach ($bookings as $booking) {
-            // Hitung jam selesai
-            $start = \Carbon\Carbon::parse($booking->tanggalBooking . ' ' . $booking->jamBooking);
-            $end = $start->copy()->addMinutes($booking->estimasi ?? 90);
-
-            $events[] = [
-                'title' => $start->format('H:i') . ' - ' . $end->format('H:i'),
-                'start' => $start->toDateTimeString(),
-                'end'   => $end->toDateTimeString(),
-            ];
-        }
-
-        return view('booking.index', [
-            'fullDates' => $fullDates,
-            'events'    => $events,
-        ]);
+    $fullDates = [];
+    foreach ($bookingsPerTanggal as $tanggal => $jumlah) {
+        if ($jumlah >= 10) $fullDates[] = $tanggal;
     }
+
+    // Siapkan events untuk FullCalendar
+    $events = [];
+    foreach ($bookings as $booking) {
+    $start = \Carbon\Carbon::parse($booking->tanggalBooking . ' ' . $booking->jamBooking);
+    $end = $start->copy()->addMinutes($booking->estimasi ?? 90);
+
+    $events[] = [
+        'title' => $start->format('H:i') . ' - ' . $end->format('H:i'),
+        'start' => $start->toDateTimeString(),
+        'end'   => $end->toDateTimeString(),
+        'jumlahKucing' => $booking->kucings->count(),
+        'namaTim'      => $booking->tim ? $booking->tim->nama_tim : '-',
+        
+    ];
+}
+
+    return view('booking.index', [
+        'fullDates' => $fullDates,
+        'events'    => $events,
+    ]);
+}
 }
 
