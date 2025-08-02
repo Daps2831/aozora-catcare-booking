@@ -1042,6 +1042,25 @@ form.profile-option {
     pointer-events: none !important;
 }
 
+.fc-daygrid-event {
+    background: #eaf1fb !important;
+    border-radius: 8px !important;
+    padding: 4px 8px !important;
+    border: none !important;
+    color: #222 !important;
+    font-size: 13px !important;
+    margin-bottom: 2px !important;
+    box-shadow: none !important;
+}
+.fc-daygrid-event .fc-event-title {
+    font-weight: bold;
+}
+.fc-daygrid-event .fc-event-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 /* ======================================================= */
 /* === KODE BARU DAN LAMA DIGABUNGKAN UNTUK KEMUDAHAN === */
 /* ======================================================= */

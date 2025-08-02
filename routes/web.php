@@ -91,6 +91,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/bookings', [App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings');
     Route::get('/bookings/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'show'])->name('bookings.show');
     Route::put('/bookings/{booking}/status', [App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('bookings.updateStatus');
+    //lihat daftar booking jika klik tanggal
+    Route::get('booking/by-date/{tanggal}', [\App\Http\Controllers\Admin\BookingController::class, 'byDate']);
+    Route::get('/booking/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'show'])->name('booking.show');
+    //hapus booking
+    Route::delete('/booking/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'destroy'])->name('booking.destroy');
+    //acc booking
+    Route::get('/booking/{booking}/acc', [App\Http\Controllers\Admin\BookingController::class, 'acc'])->name('booking.acc');
+    Route::post('/booking/{booking}/acc', [App\Http\Controllers\Admin\BookingController::class, 'accProses'])->name('booking.accProses');
+    Route::get('booking/by-date/{tanggal}', [App\Http\Controllers\Admin\BookingController::class, 'byDate'])->name('booking.by-date');
+    //selesai booking
+    Route::get('/booking/{id}/selesai', [App\Http\Controllers\Admin\BookingController::class, 'showSelesaiForm'])->name('booking.selesai');
+    Route::post('/booking/{id}/konfirmasi-selesai', [App\Http\Controllers\Admin\BookingController::class, 'konfirmasiSelesai'])->name('booking.konfirmasiSelesai');
+    //batal acc booking
+    Route::post('/booking/{id}/batal-acc', [App\Http\Controllers\Admin\BookingController::class, 'batalAcc'])->name('booking.batalAcc');
     // Kelola Layanan
     Route::resource('layanan', App\Http\Controllers\Admin\LayananController::class);
     // Kelola User

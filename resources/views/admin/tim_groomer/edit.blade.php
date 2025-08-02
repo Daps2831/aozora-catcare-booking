@@ -6,6 +6,13 @@
 @stop
 @section('content')
 <!-- <pre>{{ print_r($usedGroomerMap, true) }}</pre> -->
+<form method="GET" action="">
+    <div class="form-group">
+        <input type="checkbox" id="hide_used" name="hide_used" value="1" {{ request('hide_used') ? 'checked' : '' }} onchange="this.form.submit()">
+        <label for="hide_used">Jangan tampilkan groomer yang sudah ada di tim lain</label>
+    </div>
+</form>
+
 <form action="{{ route('admin.tim-groomer.update', $tim_groomer->id_tim) }}" method="POST">
     @csrf
     @method('PUT')
@@ -20,19 +27,25 @@
             @foreach($groomers as $g)
                 <option value="{{ $g->id_groomer }}"
                     {{ old('anggota_1', $tim_groomer->anggota_1) == $g->id_groomer ? 'selected' : '' }}>
-                    {{ $g->nama }}{{ isset($usedGroomerMap[(string)$g->id_groomer]) ? ' (Sudah di Tim: '.$usedGroomerMap[(string)$g->id_groomer].')' : '' }}
+                    {{ $g->nama }}
+                    @if(isset($usedGroomerMap[(string)$g->id_groomer]) && !request('hide_used'))
+                        (Sudah di Tim: {{ $usedGroomerMap[(string)$g->id_groomer] }})
+                    @endif
                 </option>
             @endforeach
         </select>
     </div>
     <div class="form-group">
         <label>Anggota 2 (Opsional)</label>
-        <select name="anggota_2" class="form-control">
-            <option value="">-- Tidak Ada --</option>
+        <select name="anggota_2" class="form-control" required>
+            <option value="">Pilih Groomer</option>
             @foreach($groomers as $g)
                 <option value="{{ $g->id_groomer }}"
                     {{ old('anggota_2', $tim_groomer->anggota_2) == $g->id_groomer ? 'selected' : '' }}>
-                    {{ $g->nama }}{{ isset($usedGroomerMap[(string)$g->id_groomer]) ? ' (Sudah di Tim: '.$usedGroomerMap[(string)$g->id_groomer].')' : '' }}
+                    {{ $g->nama }}
+                    @if(isset($usedGroomerMap[(string)$g->id_groomer]) && !request('hide_used'))
+                        (Sudah di Tim: {{ $usedGroomerMap[(string)$g->id_groomer] }})
+                    @endif
                 </option>
             @endforeach
         </select>

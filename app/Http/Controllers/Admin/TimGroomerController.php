@@ -67,13 +67,10 @@ class TimGroomerController extends Controller
         return redirect()->route('admin.tim-groomer.index')->with('success', 'Tim berhasil ditambahkan');
     }
 
-    public function edit(TimGroomer $tim_groomer)
+    public function edit(TimGroomer $tim_groomer, Request $request)
     {
         $groomers = Groomer::all();
 
-        
-
-        // Ambil semua id groomer yang sudah menjadi anggota di tim lain (kecuali tim ini)
         $usedGroomerMap = TimGroomer::where('id_tim', '!=', $tim_groomer->id_tim)
             ->get()
             ->reduce(function($carry, $tim) {
@@ -81,12 +78,20 @@ class TimGroomerController extends Controller
                 if ($tim->anggota_2) $carry[(string)$tim->anggota_2] = $tim->nama_tim;
                 return $carry;
             }, []);
-        
 
-        // Hapus anggota yang sudah menjadi anggota di tim ini (agar tidak muncul label "Sudah di Tim ...")
         unset($usedGroomerMap[(string)$tim_groomer->anggota_1]);
         unset($usedGroomerMap[(string)$tim_groomer->anggota_2]);
-        return view('admin.tim_groomer.edit', compact('tim_groomer', 'groomers', 'usedGroomerMap'));
+
+        $disabledGroomerIds = [];
+        if ($request->hide_used) {
+            $disabledGroomerIds = array_keys($usedGroomerMap);
+            // Filter groomers: hanya tampilkan yang tidak dipakai di tim lain
+            $groomers = $groomers->filter(function($g) use ($disabledGroomerIds) {
+                return !in_array($g->id_groomer, $disabledGroomerIds);
+            });
+        }
+
+        return view('admin.tim_groomer.edit', compact('tim_groomer', 'groomers', 'usedGroomerMap', 'disabledGroomerIds'));
     }
 
     public function update(Request $request, TimGroomer $tim_groomer)

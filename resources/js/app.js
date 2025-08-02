@@ -438,3 +438,48 @@ window.initBookingChart = function(labels7, labels30, labels365, data7, data30, 
         });
     });
 }
+
+function initFullCalendarAdmin() {
+    const calendarEl = document.getElementById('calendar');
+    if (!calendarEl || typeof FullCalendar === "undefined") return;
+
+    let events = [];
+    if (calendarEl.dataset.events) {
+        try { events = JSON.parse(calendarEl.dataset.events); } catch (e) { events = []; }
+    }
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'id',
+        events: events,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: ''
+        },
+        eventContent: function(arg) {
+            let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
+            let namaTim = arg.event.extendedProps?.namaTim ?? arg.event.namaTim;
+            return {
+                html: `
+                    <div style="background:#eaf1fb;border-radius:8px;padding:4px 8px;display:inline-block;">
+                        <div style="font-weight:bold;">${arg.event.title}</div>
+                        <div style="margin-top:2px;font-size:12px;">
+                            <span style="background:#3498db;color:#fff;border-radius:8px;padding:2px 6px;margin-right:4px;">${jumlahKucing} kucing</span>
+                            <span style="background:#2ecc71;color:#fff;border-radius:8px;padding:2px 6px;">${namaTim}</span>
+                        </div>
+                    </div>
+                `
+            }
+        },
+        eventClick: function(info) {
+            // (Optional) klik event bisa redirect ke detail booking
+            // window.location.href = `/admin/booking/${info.event.id}`;
+        },
+        dateClick: function(info) {
+            // Redirect ke halaman list booking di tanggal yang diklik
+            window.location.href = `/admin/booking/by-date/${info.dateStr}`;
+        }
+    });
+    calendar.render();
+}

@@ -5,11 +5,12 @@
 @stop
 
 @section('content')
-<div id="calendar"></div>
+<div id="calendar"
+    data-events='@json($events ?? [])'></div>
 @stop
 
 @section('css')
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.5/main.min.css" rel="stylesheet" />
 <style>
     #calendar {
         max-width: 100%;
@@ -18,29 +19,32 @@
         padding: 20px;
         border-radius: 8px;
     }
+    .fc-daygrid-day:hover {
+        background: #eaf1fb !important;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .fc-daygrid-day.active-date {
+        background: #3498db !important;
+        color: #fff !important;
+        transition: background 0.2s;
+    }
+    .fc-event,
+    .fc-daygrid-event,
+    .fc-daygrid-dot-event {
+        pointer-events: none !important;
+    }
 </style>
 @stop
 
+
+
 @section('js')
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.5/main.min.js"></script>
+<script src="{{ asset('js/script.js') }}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'id',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        events: @json($events),
-        eventClick: function(info) {
-            // Contoh: redirect ke detail booking
-            window.location.href = '/admin/booking/' + info.event.id;
-        }
-    });
-    calendar.render();
+document.addEventListener("DOMContentLoaded", function() {
+    initFullCalendarAdmin();
 });
 </script>
-@stop
+@endsection

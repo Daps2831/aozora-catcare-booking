@@ -18,7 +18,7 @@
         </div>
     </div>
     <div class="col-lg-3 col-6">
-        <div class="small-box bg-success">
+        <div class="small-box bg-info">
             <div class="inner">
                 <h3>{{ $totalBookingBulanIni }}</h3>
                 <p>Booking Bulan Ini</p>
@@ -26,7 +26,7 @@
         </div>
     </div>
     <div class="col-lg-3 col-6">
-        <div class="small-box bg-warning">
+        <div class="small-box bg-info">
             <div class="inner">
                 <h3>{{ $totalBookingTahunIni }}</h3>
                 <p>Booking Tahun Ini</p>
@@ -34,7 +34,7 @@
         </div>
     </div>
     <div class="col-lg-3 col-6">
-        <div class="small-box bg-danger">
+        <div class="small-box bg-info">
             <div class="inner">
                 <h3>{{ $totalUser }}</h3>
                 <p>User Terdaftar</p>
@@ -46,9 +46,16 @@
 {{-- Statistik Booking per Status --}}
 <div class="row">
     @foreach(['Pending','Proses','Selesai','Batal'] as $status)
+        @php
+            $iconColor = 'bg-primary';
+            if ($status == 'Pending') $iconColor = 'bg-warning';
+            elseif ($status == 'Proses') $iconColor = 'bg-info';
+            elseif ($status == 'Selesai') $iconColor = 'bg-success';
+            elseif ($status == 'Batal') $iconColor = 'bg-danger';
+        @endphp
         <div class="col-md-3">
             <div class="info-box">
-                <span class="info-box-icon bg-primary"><i class="fas fa-calendar"></i></span>
+                <span class="info-box-icon {{ $iconColor }}"><i class="fas fa-calendar"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">{{ $status }}</span>
                     <span class="info-box-number">{{ $bookingPerStatus[$status] ?? 0 }}</span>
