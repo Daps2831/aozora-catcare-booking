@@ -10,12 +10,52 @@ use App\Models\TimGroomer;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Booking::with(['kucings', 'tim'])->get();
+        $query = Booking::with(['kucings', 'tim', 'customer']);
+
+        // Filter status
+        if ($request->filled('status')) {
+            $query->where('statusBooking', $request->status);
+        }       
+
+        // Filter tanggal
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggalBooking', $request->tanggal);
+        }
+
+        $perPage = $request->input('per_page', 10); // default 10
+        $bookings = $query->paginate($perPage);
+
+        // Filter SQL untuk customer & kucing
+        if ($request->filled('q')) {
+            $search = strtolower($request->q);
+            $bookings = $bookings->filter(function($booking) use ($search) {
+                // Cek customer
+                if (str_contains(strtolower($booking->customer->name ?? ''), $search)) return true;
+                // Cek kucing
+                foreach ($booking->kucings as $kucing) {
+                    if (str_contains(strtolower($kucing->nama_kucing), $search)) return true;
+                    // Cek layanan menggunalan php
+                    if ($kucing->pivot->layanan_id) {
+                        $layanan = \App\Models\Layanan::find($kucing->pivot->layanan_id);
+                        if ($layanan && str_contains(strtolower($layanan->nama_layanan), $search)) return true;
+                    }
+                }
+                return false;
+            })->values();
+        }
+
+
+        // Query untuk kalender: cek apakah filter_calendar dicentang
+        if ($request->has('filter_calendar') && $request->input('filter_calendar')) {
+            $calendarBookings = $bookings;
+        } else {
+            $calendarBookings = Booking::with(['kucings', 'tim', 'customer'])->get();
+        }
 
         $events = [];
-        foreach ($bookings as $booking) {
+        foreach ($calendarBookings as $booking) {
             $start = \Carbon\Carbon::parse($booking->tanggalBooking . ' ' . $booking->jamBooking);
             $end = $start->copy()->addMinutes($booking->estimasi ?? 90);
 
@@ -30,6 +70,7 @@ class BookingController extends Controller
 
         return view('admin.booking.index', [
             'events' => $events,
+            'bookings' => $bookings,
         ]);
     }
 
@@ -157,5 +198,63 @@ class BookingController extends Controller
         $booking->delete();
         return redirect()->route('admin.booking.by-date', ['tanggal' => $tanggal])
             ->with('success', 'Booking berhasil dihapus.');
+    }
+
+    public function edit(Booking $booking)
+    {
+        // Tambahkan validasi ini di awal method
+        if ($booking->statusBooking !== 'Pending') {
+            return redirect()->route('admin.bookings')->with('error', 'Booking hanya bisa diedit jika status Pending.');
+        }
+
+        $customers = \App\Models\Customer::all();
+        $timList = \App\Models\TimGroomer::all();
+        $layanans = \App\Models\Layanan::all();
+
+        // Ambil semua kucing milik customer booking ini
+        $allKucings = \App\Models\Kucing::where('customer_id', $booking->customer_id)->get();
+
+        return view('admin.booking.edit', compact('booking', 'customers', 'timList', 'layanans', 'allKucings'));
+    }
+
+    public function update(Request $request, Booking $booking)
+    {
+        $kucings = $request->input('kucings', []);
+
+        $validKucings = array_filter($kucings, function($kucing) {
+            return !empty($kucing['id']) && !empty($kucing['layanan_id']);
+        });
+
+        if (count($validKucings) < 1) {
+            return back()->withErrors(['kucings' => 'Minimal harus pilih satu kucing!'])->withInput();
+        }
+
+        // Hitung estimasi total dari layanan per kucing
+        $totalEstimasi = 0;
+        foreach ($validKucings as $kucing) {
+            $layanan = \App\Models\Layanan::find($kucing['layanan_id']);
+            if ($layanan) {
+                $totalEstimasi += (int) $layanan->estimasi_pengerjaan_per_kucing;
+            }
+        }
+
+        // Update data utama booking (termasuk estimasi)
+        $booking->update([
+            'tanggalBooking' => $request->tanggalBooking,
+            'jamBooking'     => $request->jamBooking,
+            'alamatBooking'  => $request->alamatBooking,
+            'estimasi'       => $totalEstimasi,
+        ]);
+
+        // Update relasi kucing & layanan di pivot
+        $syncData = [];
+        foreach ($validKucings as $kucing) {
+            $syncData[$kucing['id']] = [
+                'layanan_id' => $kucing['layanan_id']
+            ];
+        }
+        $booking->kucings()->sync($syncData);
+
+        return redirect()->route('admin.bookings')->with('success', 'Booking berhasil diupdate.');
     }
 }

@@ -91,6 +91,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/bookings', [App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings');
     Route::get('/bookings/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'show'])->name('bookings.show');
     Route::put('/bookings/{booking}/status', [App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('bookings.updateStatus');
+    // booking list method edit update
+    Route::get('/booking/{booking}/edit', [App\Http\Controllers\Admin\BookingController::class, 'edit'])->name('booking.edit');
+    Route::put('/booking/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'update'])->name('booking.update');
+    
     //lihat daftar booking jika klik tanggal
     Route::get('booking/by-date/{tanggal}', [\App\Http\Controllers\Admin\BookingController::class, 'byDate']);
     Route::get('/booking/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'show'])->name('booking.show');
