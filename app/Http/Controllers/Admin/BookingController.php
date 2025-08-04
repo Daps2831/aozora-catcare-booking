@@ -238,6 +238,29 @@ class BookingController extends Controller
             }
         }
 
+        // Validasi bentrok tim
+        $tanggal = $request->tanggalBooking;
+        $jamMulai = \Carbon\Carbon::parse($tanggal . ' ' . $request->jamBooking);
+        $jamSelesai = $jamMulai->copy()->addMinutes($totalEstimasi);
+
+        $jumlahTim = \App\Models\TimGroomer::count();
+
+        $bookingBentrok = Booking::whereDate('tanggalBooking', $tanggal)
+            ->where('id', '!=', $booking->id) // exclude current booking
+            ->where(function($q) use ($jamMulai, $jamSelesai) {
+                $q->where(function($query) use ($jamMulai, $jamSelesai) {
+                    $query->where('jamBooking', '<', $jamSelesai->format('H:i'))
+                        ->whereRaw("ADDTIME(jamBooking, SEC_TO_TIME(estimasi*60)) > ?", [$jamMulai->format('H:i')]);
+                });
+            })
+            ->count();
+
+        if ($bookingBentrok >= $jumlahTim) {
+            return back()->withErrors([
+                'jamBooking' => 'Bentrok dengan jadwal lain dan tim yang tersedia sudah ditugaskan semua pada jam tersebut, silahkan pilih jam atau tanggal lain.'
+            ])->withInput();
+        }
+
         // Update data utama booking (termasuk estimasi)
         $booking->update([
             'tanggalBooking' => $request->tanggalBooking,

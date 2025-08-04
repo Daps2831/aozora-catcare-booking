@@ -138,7 +138,14 @@ class TimGroomerController extends Controller
 
     public function destroy(TimGroomer $tim_groomer)
     {
-        $tim_groomer->delete();
-        return redirect()->route('admin.tim-groomer.index')->with('success', 'Tim berhasil dihapus');
+        try {
+            $tim_groomer->delete();
+            return redirect()->route('admin.tim-groomer.index')->with('success', 'Tim berhasil dihapus');
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() == '23000') {
+                return redirect()->route('admin.tim-groomer.index')->with('error', 'Tidak bisa menghapus tim karena akan menyebabkan tidak tersedianya tim bagi jadwal bentrok.');
+            }
+            throw $e;
+        }
     }
 }

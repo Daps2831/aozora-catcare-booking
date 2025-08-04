@@ -4,6 +4,18 @@
 @section('content_header')
     <h1>Kelola Tim Grooming</h1>
 @stop
+
+@if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
 @section('content')
 <a href="{{ route('admin.tim-groomer.create') }}" class="btn btn-primary mb-3">Tambah Tim</a>
 <table class="table table-bordered">

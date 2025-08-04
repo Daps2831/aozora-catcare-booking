@@ -73,6 +73,7 @@
             <th>Tanggal</th> <!-- Tambahkan kolom ini -->
             <th>Jam</th>
             <th>Status</th>
+            <th>Tim</th>
             <th>Aksi</th>
         </tr>
     </thead>
@@ -115,6 +116,9 @@
                     elseif (strtolower($statusText) == 'selesai') $statusColor = 'color:#27ae60;';
                 @endphp
                 <span style="{{ $statusColor }}">{{ $statusText }}</span>
+            </td>
+            <td>
+                {{ $b->tim ? $b->tim->nama_tim : '-' }}
             </td>
             <td>
                 @if($b->statusBooking == 'Pending')

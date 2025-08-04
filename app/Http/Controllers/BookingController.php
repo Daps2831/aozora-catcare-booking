@@ -93,6 +93,36 @@ class BookingController extends Controller
             return back()->with('error', 'Maaf, kuota booking untuk tanggal yang dipilih sudah penuh atau tidak mencukupi.')->withInput();
         }
 
+        // --- VALIDASI BENTROK JAM DAN TIM ---
+        $jumlahTim = \App\Models\TimGroomer::count();
+
+        $jamMulai = Carbon::parse($validatedData['tanggalBooking'] . ' ' . $validatedData['jamBooking']);
+        $totalEstimasi = 0;
+        foreach ($validatedData['kucing_ids'] as $kucingId) {
+            $layananId = $validatedData['layanan_per_kucing'][$kucingId];
+            $layanan = Layanan::find($layananId);
+            if ($layanan) {
+                $totalEstimasi += (int) $layanan->estimasi_pengerjaan_per_kucing;
+            }
+        }
+        $jamSelesai = $jamMulai->copy()->addMinutes($totalEstimasi);
+
+        // Hitung booking bentrok di tanggal yang sama
+        $bookingBentrok = Booking::whereDate('tanggalBooking', $tanggal)
+            ->where('statusBooking', '!=', 'Selesai') // hanya booking yang belum selesai
+            ->where(function($q) use ($jamMulai, $jamSelesai) {
+                $q->where(function($query) use ($jamMulai, $jamSelesai) {
+                    $query->where('jamBooking', '<', $jamSelesai->format('H:i'))
+                        ->whereRaw("ADDTIME(jamBooking, SEC_TO_TIME(estimasi*60)) > ?", [$jamMulai->format('H:i')]);
+                });
+            })
+            ->count();
+
+        if ($bookingBentrok >= $jumlahTim) {
+            return back()->with('error', 'Bentrok dengan jadwal lain dan tim yang tersedia sudah ditugaskan semua pada jam tersebut.')->withInput();
+        }
+
+
 
         // TAHAP 3: PENYIMPANAN DATA DENGAN TRANSAKSI
         // Memastikan semua data berhasil disimpan atau tidak sama sekali.

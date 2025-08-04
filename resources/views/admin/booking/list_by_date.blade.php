@@ -16,6 +16,7 @@
             <th>Layanan</th>
             <th>Jam</th>
             <th>Status</th>
+            <th>Tim</th>
             <th>Aksi</th>
         </tr>
     </thead>
@@ -59,8 +60,12 @@
                 <span style="{{ $statusColor }}">{{ $statusText }}</span>
             </td>
             <td>
+                {{ $b->tim ? $b->tim->nama_tim : '-' }}
+            </td>
+            <td>
                 @if($b->statusBooking == 'Pending')
                     <a href="{{ route('admin.booking.acc', $b->id) }}" class="btn btn-success btn-sm">ACC</a>
+                    <a href="{{ url('/admin/booking/' . $b->id . '/edit') }}" class="btn btn-warning btn-sm">Edit</a>
                 @elseif($b->statusBooking == 'Proses')
                     <form action="{{ route('admin.booking.selesai', $b->id) }}" method="GET" style="display:inline;">
                         <button class="btn btn-success btn-sm" type="submit">Selesai</button>
@@ -71,7 +76,6 @@
                     </form>
                 @endif
                 <a href="{{ url('/admin/booking/' . $b->id) }}" class="btn btn-info btn-sm">Lihat</a>
-                <a href="{{ url('/admin/booking/' . $b->id . '/edit') }}" class="btn btn-warning btn-sm">Edit</a>
                 <form action="{{ url('/admin/booking/' . $b->id) }}" method="POST" style="display:inline;">
                     @csrf
                     @method('DELETE')

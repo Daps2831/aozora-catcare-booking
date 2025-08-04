@@ -5,6 +5,17 @@
     <h1>Kelola Groomer</h1>
 @stop
 
+@if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
 @section('content')
 <a href="{{ route('admin.groomer.create') }}" class="btn btn-primary mb-3">Tambah Groomer</a>
 <table class="table table-bordered">
