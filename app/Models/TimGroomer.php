@@ -27,4 +27,10 @@ class TimGroomer extends Model
     {
         return $this->belongsTo(Groomer::class, 'anggota_2', 'id_groomer');
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(\App\Models\Booking::class, 'tim_id', 'id_tim');
+    }
+
 }

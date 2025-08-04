@@ -22,4 +22,10 @@ class Groomer extends Model
     public function anggota2() {
         return $this->belongsTo(Groomer::class, 'anggota_2', 'id_groomer');
     }
+
+    public function tim()
+    {
+        return $this->belongsTo(\App\Models\TimGroomer::class, 'tim_id', 'id_tim');
+    }
+
 }
