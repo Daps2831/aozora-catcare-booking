@@ -261,13 +261,36 @@ class BookingController extends Controller
             }
         }
 
-        // Validasi bentrok tim
         $tanggal = $request->tanggalBooking;
+        
+        // VALIDASI 1: Cek apakah tanggal dinonaktifkan admin
+        $isDisabled = \App\Models\DisabledDate::whereDate('tanggal', $tanggal)->exists();
+        if ($isDisabled) {
+            return back()->withErrors([
+                'tanggalBooking' => 'Tanggal yang dipilih telah dinonaktifkan admin. Silakan pilih tanggal lain.'
+            ])->withInput();
+        }
+
+        // VALIDASI 2: Cek kuota harian kucing (maksimal 10 kucing per hari)
+        $jumlahKucingBaru = count($validKucings);
+        $kucingTerdaftarHariIni = Booking::whereDate('tanggalBooking', $tanggal)
+                                        ->where('id', '!=', $booking->id) // exclude current booking
+                                        ->withCount('kucings')
+                                        ->get()
+                                        ->sum('kucings_count');
+
+        if (($kucingTerdaftarHariIni + $jumlahKucingBaru) > 10) {
+            return back()->withErrors([
+                'kucings' => "Kuota kucing untuk tanggal {$tanggal} sudah penuh. Saat ini ada {$kucingTerdaftarHariIni} kucing, Anda menambah {$jumlahKucingBaru} kucing. Maksimal 10 kucing per hari."
+            ])->withInput();
+        }
+
+        // VALIDASI 3: Cek bentrok waktu dengan tim yang tersedia
         $jamMulai = \Carbon\Carbon::parse($tanggal . ' ' . $request->jamBooking);
         $jamSelesai = $jamMulai->copy()->addMinutes($totalEstimasi);
-
         $jumlahTim = \App\Models\TimGroomer::count();
 
+        // Cari booking yang bentrok waktu
         $bookingBentrok = Booking::whereDate('tanggalBooking', $tanggal)
             ->where('id', '!=', $booking->id) // exclude current booking
             ->where(function($q) use ($jamMulai, $jamSelesai) {
@@ -280,7 +303,7 @@ class BookingController extends Controller
 
         if ($bookingBentrok >= $jumlahTim) {
             return back()->withErrors([
-                'jamBooking' => 'Bentrok dengan jadwal lain dan tim yang tersedia sudah ditugaskan semua pada jam tersebut, silahkan pilih jam atau tanggal lain.'
+                'jamBooking' => "Bentrok dengan jadwal lain! Pada jam {$request->jamBooking} - {$jamSelesai->format('H:i')} sudah ada {$bookingBentrok} booking lain, sedangkan tim yang tersedia hanya {$jumlahTim} tim. Silakan pilih jam atau tanggal lain."
             ])->withInput();
         }
 
