@@ -1093,6 +1093,51 @@ form.profile-option {
     margin-left: 60px;
 }
 
+.selected-date {
+    outline: 2px solid #3498db !important;
+    background: #eaf6ff !important;
+}
+
+.fc-daygrid-event {
+    pointer-events: none !important;
+}
+
+.fc-day-disabled {
+    background-color: #f5f5f5 !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+.fc-day-disabled .fc-daygrid-day-number {
+    text-decoration: line-through !important;
+    color: #999 !important;
+}
+
+/* Pastikan tanggal yang disabled tidak bisa diselect */
+.fc-day-disabled.fc-day-selected {
+    background-color: #f5f5f5 !important;
+}
+
+/* Tooltip styling */
+.fc-daygrid-day-number[title] {
+    position: relative;
+}
+
+.fc-daygrid-day-number[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+}
 /* =============================================== */
 /* STYLE UNTUK TAMPILAN MOBILE (RESPONSIVE) */
 /* =============================================== */

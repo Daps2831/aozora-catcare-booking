@@ -87,6 +87,12 @@ Route::get('/customer/riwayat', [BookingController::class, 'riwayat'])->name('cu
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    
+    
+    // Kelola Booking - Disabled Dates
+    Route::get('/bookings/disabled-dates', [App\Http\Controllers\Admin\BookingController::class, 'disabledDates'])->name('bookings.disabled-dates');
+    Route::post('/bookings/disabled-dates', [App\Http\Controllers\Admin\BookingController::class, 'storeDisabledDate'])->name('bookings.store-disabled-date');
+    Route::delete('/bookings/disabled-dates/{id}', [App\Http\Controllers\Admin\BookingController::class, 'deleteDisabledDate'])->name('bookings.delete-disabled-date');
     // Kelola Booking
     Route::get('/bookings', [App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings');
     Route::get('/bookings/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'show'])->name('bookings.show');
@@ -119,6 +125,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('tim-groomer', App\Http\Controllers\Admin\TimGroomerController::class);
     // Laporan
     Route::get('/reports', [App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports');
+
 });
 
 Route::prefix('admin/users/{user}/kucing')->name('admin.users.kucing.')->middleware(['auth', 'admin'])->group(function () {

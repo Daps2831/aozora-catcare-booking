@@ -82,6 +82,15 @@ class BookingController extends Controller
         // TAHAP 2: VALIDASI LOGIKA BISNIS (KUOTA HARIAN)
         // Dilakukan setelah validasi dasar berhasil untuk efisiensi.
         $tanggal = Carbon::parse($validatedData['tanggalBooking']);
+        
+        // Cek apakah tanggal dinonaktifkan admin dengan keterangan
+        $tanggalFormatted = $tanggal->utc()->format('Y-m-d');
+        $disabledDate = \App\Models\DisabledDate::whereDate('tanggal', $tanggalFormatted)->first();
+        if ($disabledDate) {
+            $keterangan = $disabledDate->keterangan ?? 'Tanggal dinonaktifkan admin';
+            return back()->with('error', "Maaf, tanggal yang dipilih tidak tersedia dikarenakan {$keterangan}. Silakan pilih tanggal lain.")->withInput();
+        }
+        
         $jumlahKucingBaru = count($validatedData['kucing_ids']);
 
         $kucingTerdaftarHariIni = Booking::whereDate('tanggalBooking', $tanggal)
@@ -182,45 +191,57 @@ class BookingController extends Controller
     }
 
     public function index()
-{
-    // Ambil semua booking beserta relasi kucings dan tim
-    $bookings = Booking::with(['kucings', 'tim'])->get();
+    {
+        // Ambil semua booking beserta relasi kucings dan tim
+        $bookings = Booking::with(['kucings', 'tim'])->get();
 
-    // Siapkan array untuk tanggal penuh (kuota >= 10)
-    $bookingsPerTanggal = Booking::withCount('kucings')
-        ->select('tanggalBooking')
-        ->get()
-        ->groupBy('tanggalBooking')
-        ->map(function($items) {
-            return $items->sum('kucings_count');
-        });
+        // Siapkan array untuk tanggal penuh (kuota >= 10)
+        $bookingsPerTanggal = Booking::withCount('kucings')
+            ->select('tanggalBooking')
+            ->get()
+            ->groupBy('tanggalBooking')
+            ->map(function($items) {
+                return $items->sum('kucings_count');
+            });
 
-    $fullDates = [];
-    foreach ($bookingsPerTanggal as $tanggal => $jumlah) {
-        if ($jumlah >= 10) $fullDates[] = $tanggal;
+        $fullDates = [];
+        foreach ($bookingsPerTanggal as $tanggal => $jumlah) {
+            if ($jumlah >= 10) $fullDates[] = $tanggal;
+        }
+
+        // Ambil tanggal yang dinonaktifkan admin beserta keterangannya
+        $disabledDatesData = \App\Models\DisabledDate::all()->map(function($date) {
+            return [
+                'date' => \Carbon\Carbon::parse($date->tanggal)->utc()->format('Y-m-d'),
+                'keterangan' => $date->keterangan ?? 'Tanggal dinonaktifkan admin'
+            ];
+        })->keyBy('date')->toArray();
+
+        // Ambil hanya tanggal untuk fullDates
+        $disabledDates = array_keys($disabledDatesData);
+        $fullDates = array_merge($fullDates, $disabledDates);
+
+        // Siapkan events untuk FullCalendar
+        $events = [];
+        foreach ($bookings as $booking) {
+            $start = \Carbon\Carbon::parse($booking->tanggalBooking . ' ' . $booking->jamBooking);
+            $end = $start->copy()->addMinutes($booking->estimasi ?? 90);
+
+            $events[] = [
+                'title' => $start->format('H:i') . ' - ' . $end->format('H:i'),
+                'start' => $start->toDateTimeString(),
+                'end'   => $end->toDateTimeString(),
+                'jumlahKucing' => $booking->kucings->count(),
+                'statusBooking' => $booking->statusBooking, 
+                'namaTim'      => $booking->tim ? $booking->tim->nama_tim : '-',
+            ];
+        }
+
+        return view('booking.index', [
+            'fullDates' => $fullDates,
+            'disabledDatesData' => $disabledDatesData, // Kirim data keterangan
+            'events'    => $events,
+        ]);
     }
-
-    // Siapkan events untuk FullCalendar
-    $events = [];
-    foreach ($bookings as $booking) {
-    $start = \Carbon\Carbon::parse($booking->tanggalBooking . ' ' . $booking->jamBooking);
-    $end = $start->copy()->addMinutes($booking->estimasi ?? 90);
-
-    $events[] = [
-        'title' => $start->format('H:i') . ' - ' . $end->format('H:i'),
-        'start' => $start->toDateTimeString(),
-        'end'   => $end->toDateTimeString(),
-        'jumlahKucing' => $booking->kucings->count(),
-        'statusBooking' => $booking->statusBooking, 
-        'namaTim'      => $booking->tim ? $booking->tim->nama_tim : '-',
-        
-    ];
-}
-
-    return view('booking.index', [
-        'fullDates' => $fullDates,
-        'events'    => $events,
-    ]);
-}
 }
 

@@ -326,8 +326,19 @@ return [
         ],
         [
             'text' => 'Kelola Booking',
-            'url'  => 'admin/bookings',
             'icon' => 'fas fa-calendar-check',
+            'submenu' => [
+                [
+                    'text' => 'Daftar Booking',
+                    'url'  => 'admin/bookings',
+                    'icon' => 'fas fa-list',
+                ],
+                [
+                    'text' => 'Nonaktifkan Tanggal',
+                    'url'  => 'admin/bookings/disabled-dates',
+                    'icon' => 'fas fa-ban',
+                ],
+            ],
         ],
         [
             'text' => 'Kelola Layanan',

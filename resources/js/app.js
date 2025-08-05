@@ -84,22 +84,44 @@ function initFullCalendar() {
     const btnKonfirmasi = document.getElementById('btn-konfirmasi-booking');
     let selectedDate = null;
 
-    // Ambil data fullDates dan events dari atribut data-* pada elemen #calendar
+    // Ambil data fullDates, disabledDatesData, dan events dari atribut data-*
     let fullDates = [];
+    let disabledDatesData = {};
     let events = [];
+    
     if (calendarEl.dataset.fullDates) {
-        try { fullDates = JSON.parse(calendarEl.dataset.fullDates); } catch (e) { fullDates = []; }
+        try { 
+            fullDates = JSON.parse(calendarEl.dataset.fullDates);
+        } catch (e) { fullDates = []; }
     }
+    
+    if (calendarEl.dataset.disabledDatesData) {
+        try { 
+            disabledDatesData = JSON.parse(calendarEl.dataset.disabledDatesData);
+        } catch (e) { disabledDatesData = {}; }
+    }
+    
     if (calendarEl.dataset.events) {
         try { events = JSON.parse(calendarEl.dataset.events); } catch (e) { events = []; }
     }
-    const today = new Date().toISOString().split('T')[0];
+
+    // Fungsi untuk normalisasi tanggal ke UTC
+    function normalizeDate(dateStr) {
+        const date = new Date(dateStr + 'T00:00:00.000Z');
+        return date.toISOString().split('T')[0];
+    }
+
+    // Normalisasi fullDates
+    fullDates = fullDates.map(date => normalizeDate(date));
+    
+    const today = normalizeDate(new Date().toISOString().split('T')[0]);
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'id',
         selectable: true,
         events: events,
+        timeZone: 'UTC',
       
         eventContent: function(arg) {
             let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
@@ -124,12 +146,13 @@ function initFullCalendar() {
                 `
             }
         },
-    selectAllow: function(selectInfo) {
-        const dateStr = selectInfo.startStr;
-        return dateStr >= today && !fullDates.includes(dateStr);
-    },
-    dateClick: function(info) {
-            const dateStr = info.dateStr;
+        selectAllow: function(selectInfo) {
+            const dateStr = normalizeDate(selectInfo.startStr);
+            return dateStr >= today && !fullDates.includes(dateStr);
+        },
+        dateClick: function(info) {
+            const dateStr = normalizeDate(info.dateStr);
+            
             const clickedMonth = info.date.getMonth();
             const currentMonth = calendar.getDate().getMonth();
 
@@ -143,30 +166,67 @@ function initFullCalendar() {
             }
 
             if (dateStr < today) {
-                timeInfo.textContent = '';
+                timeInfo.textContent = 'Tanggal sudah berlalu, tidak bisa dipilih.';
                 btnKonfirmasi.disabled = true;
                 return;
             }
+            
+            // Cek apakah tanggal dinonaktifkan admin dengan keterangan
+            if (disabledDatesData[dateStr]) {
+                const keterangan = disabledDatesData[dateStr].keterangan;
+                timeInfo.textContent = `Tanggal tidak tersedia dikarenakan ${keterangan}. Silakan pilih tanggal lain.`;
+                btnKonfirmasi.disabled = true;
+                return;
+            }
+            
+            // Cek apakah tanggal penuh (kuota habis)
             if (fullDates.includes(dateStr)) {
                 timeInfo.textContent = 'Tanggal penuh, silakan pilih tanggal lain.';
                 btnKonfirmasi.disabled = true;
                 return;
             }
+            
             selectedDate = dateStr;
             timeInfo.textContent = 'Tanggal dipilih: ' + dateStr;
             btnKonfirmasi.disabled = false;
         },
         dayCellDidMount: function(arg) {
-            const dateStr = arg.date.toISOString().split('T')[0];
+            const dateStr = normalizeDate(arg.date.toISOString().split('T')[0]);
+            
             // Cek jika tanggal disable
             if (dateStr < today || fullDates.includes(dateStr)) {
                 arg.el.classList.add('fc-day-disabled');
-                arg.el.style.background = '#eee';
-                arg.el.style.cursor = 'not-allowed';
+                
+                // Tambahkan teks indicator jika tanggal dinonaktifkan admin
+                if (disabledDatesData[dateStr] && dateStr >= today) {
+                    const dayNumber = arg.el.querySelector('.fc-daygrid-day-number');
+                    if (dayNumber) {
+                        dayNumber.style.textDecoration = 'line-through';
+                        dayNumber.style.color = '#999';
+                        
+                        // Tambahkan tooltip dengan keterangan
+                        dayNumber.title = `Tidak tersedia: ${disabledDatesData[dateStr].keterangan}`;
+                    }
+                }
                 return;
             }
-            // Handler klik pada seluruh cell tanggal (termasuk area event)
+            
+            // Handler klik pada seluruh cell tanggal
             arg.el.addEventListener('click', function(e) {
+                // Cek lagi saat diklik untuk memastikan
+                if (disabledDatesData[dateStr]) {
+                    const keterangan = disabledDatesData[dateStr].keterangan;
+                    timeInfo.textContent = `Tanggal tidak tersedia dikarenakan ${keterangan}. Silakan pilih tanggal lain.`;
+                    btnKonfirmasi.disabled = true;
+                    return;
+                }
+                
+                if (fullDates.includes(dateStr)) {
+                    timeInfo.textContent = 'Tanggal penuh, silakan pilih tanggal lain.';
+                    btnKonfirmasi.disabled = true;
+                    return;
+                }
+                
                 selectedDate = dateStr;
                 timeInfo.textContent = 'Tanggal dipilih: ' + dateStr;
                 btnKonfirmasi.disabled = false;
@@ -179,10 +239,10 @@ function initFullCalendar() {
     calendar.render();
 
     btnKonfirmasi.addEventListener('click', function () {
-        if (selectedDate) {
+        if (selectedDate && !fullDates.includes(selectedDate) && !disabledDatesData[selectedDate]) {
             window.location.href = `/booking/create?date=${selectedDate}`;
         } else {
-            alert("Silakan pilih tanggal terlebih dahulu!");
+            alert("Silakan pilih tanggal yang tersedia terlebih dahulu!");
         }
     });
 }

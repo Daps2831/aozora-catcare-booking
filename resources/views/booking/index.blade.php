@@ -55,7 +55,9 @@
 
     <div id="calendar" class="calendar-customer"
         data-full-dates='@json($fullDates ?? [])'
-        data-events='@json($events ?? [])'></div>
+        data-disabled-dates-data="{{ json_encode($disabledDatesData) }}"
+        data-events='@json($events ?? [])'>
+    </div>
     <div id="calendar-time-info" style="margin-top:1rem;font-weight:bold"></div>
     <button id="btn-konfirmasi-booking" style="margin-top:1.5rem;" disabled>Konfirmasi</button>
     <a href="{{ route('user.dashboard') }}" class="btn-back" style="margin-top:1rem; display: inline-block;">Kembali ke dashboard</a>

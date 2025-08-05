@@ -303,4 +303,41 @@ class BookingController extends Controller
 
         return redirect()->route('admin.bookings')->with('success', 'Booking berhasil diupdate.');
     }
+
+    public function deleteDisabledDate($id)
+    {
+        \App\Models\DisabledDate::findOrFail($id)->delete();
+        return back()->with('success', 'Tanggal berhasil dihapus dari daftar nonaktif.');
+    }
+
+    public function disabledDates()
+    {
+        $disabledDates = \App\Models\DisabledDate::orderBy('tanggal', 'asc')->paginate(10);
+        return view('admin.booking.disabled_dates', compact('disabledDates'));
+    }
+
+    public function storeDisabledDate(Request $request)
+    {
+        $request->validate([
+            'tanggal' => 'required|date|after_or_equal:today',
+            'keterangan' => 'nullable|string|max:255'
+        ], [
+            'tanggal.required' => 'Tanggal harus diisi.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'tanggal.after_or_equal' => 'Tanggal tidak boleh kurang dari hari ini.',
+        ]);
+
+        // Cek apakah tanggal sudah ada
+        $exists = \App\Models\DisabledDate::where('tanggal', $request->tanggal)->exists();
+        if ($exists) {
+            return back()->withErrors(['tanggal' => 'Tanggal ini sudah dinonaktifkan.'])->withInput();
+        }
+
+        \App\Models\DisabledDate::create([
+            'tanggal' => $request->tanggal,
+            'keterangan' => $request->keterangan
+        ]);
+
+        return back()->with('success', 'Tanggal berhasil dinonaktifkan.');
+    }
 }
