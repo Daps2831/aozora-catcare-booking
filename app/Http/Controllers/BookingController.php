@@ -211,6 +211,7 @@ class BookingController extends Controller
         'start' => $start->toDateTimeString(),
         'end'   => $end->toDateTimeString(),
         'jumlahKucing' => $booking->kucings->count(),
+        'statusBooking' => $booking->statusBooking, 
         'namaTim'      => $booking->tim ? $booking->tim->nama_tim : '-',
         
     ];

@@ -176,6 +176,66 @@
     .fc-daygrid-dot-event {
         pointer-events: none !important;
     }
+    /* Batasi lebar event agar tidak keluar dari kotak tanggal */
+    #calendar .fc-daygrid-event-harness,
+    #calendar .fc-daygrid-event {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+    }
+
+    /* Batasi lebar container custom event */
+    #calendar .fc-daygrid-event-harness > a > div {
+        max-width: 100%;
+        box-sizing: border-box;
+        word-break: break-word;
+        overflow: hidden;
+    }
+
+    /* Pastikan cell tanggal tidak overflow */
+    #calendar .fc-daygrid-day {
+        overflow: hidden;
+    }
+
+    #calendar .fc-daygrid-event-harness > a > div {
+        max-width: 100%;
+        box-sizing: border-box;
+        word-break: break-word;
+        font-size: 8px; /* font lebih kecil */
+        line-height: 1.3;
+        overflow: hidden;
+        padding: 2px 4px;
+    }
+    #calendar .fc-daygrid-event-harness,
+    #calendar .fc-daygrid-event {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+       /* Default: font-size normal (misal 13px) untuk PC/tablet */
+    #calendar .fc-daygrid-event-harness > a > div,
+    #calendar .fc-daygrid-event-harness > a > div *,
+    #calendar .fc-daygrid-event-harness > a > div span {
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Untuk layar <= 600px (mobile), font-size jadi kecil */
+    @media (max-width: 600px) {
+        #calendar .fc-daygrid-event-harness > a > div,
+        #calendar .fc-daygrid-event-harness > a > div *,
+        #calendar .fc-daygrid-event-harness > a > div span {
+            font-size: 8px !important;
+            line-height: 1.3 !important;
+        }
+    }
 </style>
 @stop
 

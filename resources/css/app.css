@@ -540,6 +540,7 @@ form input:focus {
     width: 25%;
     height: 100%;
     background-color: #333;
+    z-index: 9999; /* pastikan lebih tinggi dari kalender */
     color: white;
     padding: 20px;
     transition: all 0.3s;
@@ -1201,7 +1202,8 @@ form.profile-option {
 
     /* 5. Perbaiki Posisi Tombol Menu Samping */
     .menu-btn {
-        top: 20px;
-        right: 20px;
+        top: 80px !important; /* atau sesuaikan lebih besar jika perlu */
+        right: 20px !important;
+        z-index: 10000;
     }
 }

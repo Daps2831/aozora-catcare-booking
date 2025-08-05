@@ -102,22 +102,28 @@ function initFullCalendar() {
         events: events,
       
         eventContent: function(arg) {
-            // Ambil data dari event (karena dikirim via data-attribute, properti ada di arg.event)
             let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
             let namaTim = arg.event.extendedProps?.namaTim ?? arg.event.namaTim;
+            let statusBooking = arg.event.extendedProps?.statusBooking ?? arg.event.statusBooking;
+
+            let bgColor = '#eaf1fb';
+            if (statusBooking && statusBooking.toLowerCase() === 'selesai') {
+                bgColor = '#eafbe7';
+            }
 
             return {
                 html: `
-                    <div style="background:#eaf1fb;border-radius:8px;padding:4px 8px;display:inline-block;">
+                    <div style="background:${bgColor};border-radius:8px;padding:4px 8px;display:inline-block;">
                         <div style="font-weight:bold;">${arg.event.title}</div>
                         <div style="margin-top:2px;font-size:12px;">
                             <span style="background:#3498db;color:#fff;border-radius:8px;padding:2px 6px;margin-right:4px;">${jumlahKucing} kucing</span>
                             <span style="background:#2ecc71;color:#fff;border-radius:8px;padding:2px 6px;">${namaTim}</span>
                         </div>
+                        ${statusBooking && statusBooking.toLowerCase() === 'selesai' ? '<span style="color:#27ae60;font-weight:bold;font-size:12px;">Selesai</span>' : ''}
                     </div>
                 `
             }
-    },
+        },
     selectAllow: function(selectInfo) {
         const dateStr = selectInfo.startStr;
         return dateStr >= today && !fullDates.includes(dateStr);
@@ -460,14 +466,22 @@ function initFullCalendarAdmin() {
         eventContent: function(arg) {
             let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
             let namaTim = arg.event.extendedProps?.namaTim ?? arg.event.namaTim;
+            let statusBooking = arg.event.extendedProps?.statusBooking ?? arg.event.statusBooking;
+
+            let bgColor = '#eaf1fb';
+            if (statusBooking && statusBooking.toLowerCase() === 'selesai') {
+                bgColor = '#eafbe7';
+            }
+
             return {
                 html: `
-                    <div style="background:#eaf1fb;border-radius:8px;padding:4px 8px;display:inline-block;">
+                    <div style="background:${bgColor};border-radius:8px;padding:4px 8px;display:inline-block;">
                         <div style="font-weight:bold;">${arg.event.title}</div>
                         <div style="margin-top:2px;font-size:12px;">
                             <span style="background:#3498db;color:#fff;border-radius:8px;padding:2px 6px;margin-right:4px;">${jumlahKucing} kucing</span>
                             <span style="background:#2ecc71;color:#fff;border-radius:8px;padding:2px 6px;">${namaTim}</span>
                         </div>
+                        ${statusBooking && statusBooking.toLowerCase() === 'selesai' ? '<span style="color:#27ae60;font-weight:bold;font-size:12px;">Selesai</span>' : ''}
                     </div>
                 `
             }

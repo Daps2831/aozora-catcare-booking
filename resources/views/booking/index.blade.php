@@ -53,7 +53,7 @@
     </div>
     <!-- /Keterangan Kalender -->
 
-    <div id="calendar"
+    <div id="calendar" class="calendar-customer"
         data-full-dates='@json($fullDates ?? [])'
         data-events='@json($events ?? [])'></div>
     <div id="calendar-time-info" style="margin-top:1rem;font-weight:bold"></div>
@@ -64,17 +64,99 @@
 
 @section('css')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.5/main.min.css" rel="stylesheet" />
+
 <style>
     #calendar {
+    max-width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    }
+
+    /* Perlebar kalender di mobile */
+    @media (max-width: 600px) {
+        /* Container event jadi column */
+        .calendar-customer .fc-daygrid-event-harness > a > div {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 2px !important;
+            font-size: 8px !important;
+            line-height: 1.3 !important;
+            padding: 2px 4px !important;
+            width: 100% !important;
+        }
+        /* Semua isi event jadi block */
+        .calendar-customer .fc-daygrid-event-harness > a > div > *,
+        .calendar-customer .fc-daygrid-event-harness > a > div > span,
+        .calendar-customer .fc-daygrid-event-harness > a > div > div {
+            display: block !important;
+            width: 100% !important;
+            margin: 0 !important;
+            text-align: left !important;
+        }
+    }
+
+    .calendar-customer .fc-daygrid-event-harness,
+    .calendar-customer .fc-daygrid-event {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Batasi lebar event agar tidak keluar dari kotak tanggal */
+    .calendar-customer .fc-daygrid-event-harness,
+    .calendar-customer .fc-daygrid-event {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+    }
+
+    /* Batasi lebar container custom event */
+        .calendar-customer .fc-daygrid-event-harness > a > div {
         max-width: 100%;
-        margin: 0 auto;
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
+        box-sizing: border-box;
+        word-break: break-word;
+        font-size: 12px; /* font lebih kecil */
+        line-height: 1.2;
+        overflow: hidden;
+        padding: 2px 4px;
+    }
+    .calendar-customer .fc-daygrid-event-harness,
+    .calendar-customer .fc-daygrid-event {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+         /* Default: font-size normal (misal 13px) untuk PC/tablet */
+    #calendar-customer .fc-daygrid-event-harness > a > div,
+    #calendar-customer .fc-daygrid-event-harness > a > div *,
+    #calendar-customer .fc-daygrid-event-harness > a > div span {
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Untuk layar <= 600px (mobile), font-size jadi kecil */
+    @media (max-width: 600px) {
+        #calendar .fc-daygrid-event-harness > a > div,
+        #calendar .fc-daygrid-event-harness > a > div *,
+        #calendar .fc-daygrid-event-harness > a > div span {
+            font-size: 8px !important;
+            line-height: 1.3 !important;
+        }
     }
 </style>
 @endsection
 
 @section('js')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.5/main.min.js"></script>
+
 @endsection

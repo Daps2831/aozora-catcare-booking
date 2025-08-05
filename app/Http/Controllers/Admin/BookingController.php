@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\TimGroomer;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 
 class BookingController extends Controller
@@ -24,28 +25,49 @@ class BookingController extends Controller
             $query->whereDate('tanggalBooking', $request->tanggal);
         }
 
-        $perPage = $request->input('per_page', 10); // default 10
-        $bookings = $query->paginate($perPage);
+        $perPage = $request->input('per_page', 10);
 
-        // Filter SQL untuk customer & kucing
+        // Jika search layanan, ambil semua dulu, filter di PHP, lalu paginasi manual
         if ($request->filled('q')) {
             $search = strtolower($request->q);
-            $bookings = $bookings->filter(function($booking) use ($search) {
-                // Cek customer
-                if (str_contains(strtolower($booking->customer->name ?? ''), $search)) return true;
-                // Cek kucing
-                foreach ($booking->kucings as $kucing) {
-                    if (str_contains(strtolower($kucing->nama_kucing), $search)) return true;
-                    // Cek layanan menggunalan php
-                    if ($kucing->pivot->layanan_id) {
-                        $layanan = \App\Models\Layanan::find($kucing->pivot->layanan_id);
-                        if ($layanan && str_contains(strtolower($layanan->nama_layanan), $search)) return true;
-                    }
-                }
-                return false;
-            })->values();
-        }
 
+            // Ambil semua data dulu
+            $allBookings = $query->get();
+
+            $filtered = $allBookings->filter(function($booking) use ($search) {
+                // Cek customer
+                $customerMatch = $booking->customer && stripos(strtolower($booking->customer->name), $search) !== false;
+
+                // Cek kucing
+                $kucingMatch = $booking->kucings->contains(function($kucing) use ($search) {
+                    return stripos(strtolower($kucing->nama_kucing), $search) !== false;
+                });
+
+                // Cek layanan (pivot relasi)
+                $layananMatch = $booking->kucings->contains(function($kucing) use ($search) {
+                    if (isset($kucing->pivot->layanan_id)) {
+                        $layanan = \App\Models\Layanan::find($kucing->pivot->layanan_id);
+                        return $layanan && stripos(strtolower($layanan->nama_layanan), $search) !== false;
+                    }
+                    return false;
+                });
+
+                return $customerMatch || $kucingMatch || $layananMatch;
+            })->values();
+
+            // Paginate hasil filter
+            $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+            $bookings = new \Illuminate\Pagination\LengthAwarePaginator(
+                $filtered->forPage($currentPage, $perPage),
+                $filtered->count(),
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+            );
+        } else {
+            // Jika tidak search, pakai paginate biasa
+            $bookings = $query->paginate($perPage);
+        }
 
         // Query untuk kalender: cek apakah filter_calendar dicentang
         if ($request->has('filter_calendar') && $request->input('filter_calendar')) {
@@ -64,6 +86,7 @@ class BookingController extends Controller
                 'start' => $start->toDateTimeString(),
                 'end'   => $end->toDateTimeString(),
                 'jumlahKucing' => $booking->kucings->count(),
+                'statusBooking' => $booking->statusBooking, 
                 'namaTim'      => $booking->tim ? $booking->tim->nama_tim : '-',
             ];
         }
@@ -72,7 +95,7 @@ class BookingController extends Controller
             'events' => $events,
             'bookings' => $bookings,
         ]);
-    }
+    } 
 
     public function byDate($tanggal)
     {

@@ -11,7 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initKucingchecked();
     validateBookingForm();
     initSelectAll();
-    initFullCalendar();
+    if (window.location.pathname.startsWith('/admin')) {
+        initFullCalendarAdmin();
+    } else {
+        initFullCalendar();
+    }
     
    
 });
@@ -83,17 +87,29 @@ function initFullCalendar() {
         locale: 'id',
         selectable: true,
         events: events,
+   
         eventContent: function(arg) {
-            // Custom tampilan event: jam booking - jam selesai
-            let title = arg.event.title;
+            let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
+            let namaTim = arg.event.extendedProps?.namaTim ?? arg.event.namaTim;
+            let statusBooking = arg.event.extendedProps?.statusBooking ?? arg.event.statusBooking;
+
+            let bgColor = '#eaf1fb';
+            if (statusBooking && statusBooking.toLowerCase() === 'selesai') {
+                bgColor = '#eafbe7';
+            }
+
             return {
-                html: `<div style="background:#e0e7ff;color:#3730a3;padding:2px 6px;border-radius:8px;font-size:12px;margin-top:2px;display:inline-block">${title}</div>`
-            };
-        },
-        eventClick: function(info) {
-            // Tidak melakukan apapun
-            info.jsEvent.preventDefault();
-            return false;
+                html: `
+                    <div style="background:${bgColor};border-radius:8px;padding:4px 8px;display:inline-block;">
+                        <div style="font-weight:bold;">${arg.event.title}</div>
+                        <div style="margin-top:2px;font-size:12px;">
+                            <span style="background:#3498db;color:#fff;border-radius:8px;padding:2px 6px;margin-right:4px;">${jumlahKucing} kucing</span>
+                            <span style="background:#2ecc71;color:#fff;border-radius:8px;padding:2px 6px;">${namaTim}</span>
+                        </div>
+                        ${statusBooking && statusBooking.toLowerCase() === 'selesai' ? '<span style="color:#27ae60;font-weight:bold;font-size:12px;">Selesai</span>' : ''}
+                    </div>
+                `
+            }
         },
         selectAllow: function(selectInfo) {
             const dateStr = selectInfo.startStr;
@@ -429,14 +445,22 @@ function initFullCalendarAdmin() {
         eventContent: function(arg) {
             let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
             let namaTim = arg.event.extendedProps?.namaTim ?? arg.event.namaTim;
+            let statusBooking = arg.event.extendedProps?.statusBooking ?? arg.event.statusBooking;
+
+            let bgColor = '#eaf1fb';
+            if (statusBooking && statusBooking.toLowerCase() === 'selesai') {
+                bgColor = '#eafbe7';
+            }
+
             return {
                 html: `
-                    <div style="background:#eaf1fb;border-radius:8px;padding:4px 8px;display:inline-block;">
+                    <div style="background:${bgColor};border-radius:8px;padding:4px 8px;display:inline-block;">
                         <div style="font-weight:bold;">${arg.event.title}</div>
                         <div style="margin-top:2px;font-size:12px;">
                             <span style="background:#3498db;color:#fff;border-radius:8px;padding:2px 6px;margin-right:4px;">${jumlahKucing} kucing</span>
                             <span style="background:#2ecc71;color:#fff;border-radius:8px;padding:2px 6px;">${namaTim}</span>
                         </div>
+                        ${statusBooking && statusBooking.toLowerCase() === 'selesai' ? '<span style="color:#27ae60;font-weight:bold;font-size:12px;">Selesai</span>' : ''}
                     </div>
                 `
             }
