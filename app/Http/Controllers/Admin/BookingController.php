@@ -108,7 +108,15 @@ class BookingController extends Controller
 
     public function show($id)
     {
-        $booking = Booking::with(['customer', 'kucings'])->findOrFail($id);
+        // Load dengan relasi pivot yang berisi catatan
+        $booking = Booking::with([
+            'customer', 
+            'kucings' => function($query) {
+                $query->withPivot('layanan_id', 'catatan');
+            },
+            'tim'
+        ])->findOrFail($id);
+        
         return view('admin.booking.show', compact('booking'));
     }
 

@@ -165,14 +165,17 @@
                             <div class="form-group">
                                 <label for="customer_username">Username Customer</label>
                                 <input type="text" 
-                                       name="customer_username" 
-                                       id="customer_username"
-                                       class="form-control @error('customer_username') is-invalid @enderror" 
-                                       value="{{ old('customer_username') }}" 
-                                       placeholder="Username customer">
+                                    name="customer_username" 
+                                    id="customer_username"
+                                    class="form-control @error('customer_username') is-invalid @enderror" 
+                                    value="{{ old('customer_username') }}" 
+                                    placeholder="Otomatis sama dengan username akun"
+                                    readonly
+                                    style="background-color: #f8f9fa;">
                                 @error('customer_username')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <small class="text-muted">Username customer otomatis sama dengan username akun</small>
                             </div>
                         </div>
                     </div>
@@ -237,6 +240,7 @@
 </div>
 @stop
 
+
 @section('css')
 <style>
 .text-danger {
@@ -253,6 +257,23 @@
 
 #customer-info {
     transition: all 0.3s ease;
+}
+
+/* Style untuk readonly field */
+input[readonly] {
+    background-color: #f8f9fa !important;
+    cursor: not-allowed;
+}
+
+/* Animation untuk sync */
+.sync-animation {
+    animation: syncPulse 0.5s ease-in-out;
+}
+
+@keyframes syncPulse {
+    0% { background-color: #f8f9fa; }
+    50% { background-color: #e3f2fd; }
+    100% { background-color: #f8f9fa; }
 }
 </style>
 @stop
@@ -289,13 +310,43 @@ $(document).ready(function() {
         }
     });
     
-    // Auto-generate username dari nama (optional)
+    // Auto-generate username dari nama
     $('#name').on('blur', function() {
         const name = $(this).val();
         if (name && !$('#username').val()) {
-            // Generate username dari nama (lowercase, hapus spasi)
-            const username = name.toLowerCase().replace(/\s+/g, '');
+            // Generate username dari nama (lowercase, hapus spasi, tambah angka random)
+            const username = name.toLowerCase().replace(/\s+/g, '') + Math.floor(Math.random() * 100);
             $('#username').val(username);
+            // Auto-sync ke customer username
+            $('#customer_username').val(username);
+        }
+    });
+    
+    // Real-time sync username ketika user username diubah
+    $('#username').on('input', function() {
+        const username = $(this).val();
+        // Auto-sync ke customer username dengan animation
+        $('#customer_username').val(username).addClass('sync-animation');
+        
+        // Remove animation class setelah selesai
+        setTimeout(function() {
+            $('#customer_username').removeClass('sync-animation');
+        }, 500);
+    });
+    
+    // Sync ketika username kehilangan fokus
+    $('#username').on('blur', function() {
+        const username = $(this).val();
+        $('#customer_username').val(username);
+        
+        // Validasi username
+        if (username.length < 3) {
+            $(this).addClass('is-invalid');
+            $(this).siblings('.invalid-feedback').remove();
+            $(this).after('<div class="invalid-feedback">Username minimal 3 karakter</div>');
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).siblings('.invalid-feedback').remove();
         }
     });
 });

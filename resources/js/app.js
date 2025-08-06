@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     validateBookingForm();
     initSelectAll();
     initFullCalendar();
+    initUserDropdown();
 });
 
 /**
@@ -29,21 +30,155 @@ document.addEventListener("DOMContentLoaded", () => {
 function initSideMenu() {
     const menuBtn = document.getElementById("menu-btn");
     const sideMenu = document.getElementById("side-menu");
-    if (menuBtn && sideMenu) {
-        menuBtn.addEventListener("click", function () {
-            menuBtn.classList.toggle("open");
-            sideMenu.classList.toggle("open");
-        });
-    }
-    // Untuk tombol close (X)
+    const overlay = document.getElementById("side-menu-overlay");
     const closeBtn = document.getElementById("close-btn");
-    if (closeBtn && sideMenu && menuBtn) {
-        closeBtn.addEventListener("click", function () {
-            sideMenu.classList.remove("open");
-            menuBtn.classList.remove("open");
+
+    if (!menuBtn || !sideMenu) return;
+
+    // Function to open menu
+    const openMenu = () => {
+        menuBtn.classList.add("open");
+        sideMenu.classList.add("open");
+        if (overlay) overlay.classList.add("show");
+        document.body.style.overflow = "hidden"; // Prevent scrolling
+    };
+
+    // Function to close menu
+    const closeMenu = () => {
+        menuBtn.classList.remove("open");
+        sideMenu.classList.remove("open");
+        if (overlay) overlay.classList.remove("show");
+        document.body.style.overflow = ""; // Restore scrolling
+    };
+
+    // Menu button click
+    if (menuBtn) {
+        menuBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            if (sideMenu.classList.contains("open")) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
         });
     }
+
+    // Close button click
+    if (closeBtn) {
+        closeBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            closeMenu();
+        });
+    }
+
+    // Overlay click
+    if (overlay) {
+        overlay.addEventListener("click", closeMenu);
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener("click", function(event) {
+        if (sideMenu.classList.contains("open")) {
+            if (!sideMenu.contains(event.target) && 
+                !menuBtn.contains(event.target)) {
+                closeMenu();
+            }
+        }
+    });
+
+    // Close menu with Escape key
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape" && sideMenu.classList.contains("open")) {
+            closeMenu();
+        }
+    });
+
+    // Prevent menu from closing when clicking inside
+    sideMenu.addEventListener("click", function(e) {
+        e.stopPropagation();
+    });
 }
+
+// Fungsi untuk mengaktifkan user dropdown
+function initUserDropdown() {
+    const userDropdown = document.getElementById("userDropdown");
+    const dropdownMenu = document.getElementById("dropdownMenu");
+    const userDropdownContainer = document.querySelector(".user-dropdown");
+
+    if (!userDropdown || !dropdownMenu || !userDropdownContainer) {
+        console.log("User dropdown elements not found");
+        return;
+    }
+
+    console.log("User dropdown initialized successfully");
+
+    // Toggle dropdown saat diklik
+    userDropdown.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const isOpen = dropdownMenu.classList.contains("show");
+        console.log("Dropdown clicked, current state:", isOpen);
+        
+        if (isOpen) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
+    });
+
+    // Function to open dropdown
+    function openDropdown() {
+        console.log("Opening dropdown");
+        dropdownMenu.classList.add("show");
+        userDropdownContainer.classList.add("open");
+        
+        // Force CSS styles for immediate visibility
+        dropdownMenu.style.display = "block";
+        dropdownMenu.style.opacity = "1";
+        dropdownMenu.style.visibility = "visible";
+        dropdownMenu.style.transform = "translateY(0)";
+        dropdownMenu.style.pointerEvents = "auto";
+    }
+
+    // Function to close dropdown
+    function closeDropdown() {
+        console.log("Closing dropdown");
+        dropdownMenu.classList.remove("show");
+        userDropdownContainer.classList.remove("open");
+        
+        // Reset styles with delay for smooth animation
+        setTimeout(() => {
+            if (!dropdownMenu.classList.contains("show")) {
+                dropdownMenu.style.display = "";
+                dropdownMenu.style.opacity = "";
+                dropdownMenu.style.visibility = "";
+                dropdownMenu.style.transform = "";
+                dropdownMenu.style.pointerEvents = "";
+            }
+        }, 300);
+    }
+
+    // Close dropdown saat klik di luar
+    document.addEventListener("click", function(event) {
+        if (!userDropdownContainer.contains(event.target)) {
+            closeDropdown();
+        }
+    });
+
+    // Close dropdown dengan ESC key
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape") {
+            closeDropdown();
+        }
+    });
+
+    // Prevent dropdown from closing when clicking inside
+    dropdownMenu.addEventListener("click", function(e) {
+        e.stopPropagation();
+    });
+}
+
 
 // Fungsi untuk mengaktifkan preview gambar
 function initImagePreview() {

@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', 'Layanan Kami')
@@ -26,3 +27,26 @@
         </div>
     </section>
 @endsection
+
+<style>
+.service-gallery .gallery {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Menyusun gambar dalam satu baris */
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.service-gallery .gallery-item {
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.service-gallery .gallery-item img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+</style>

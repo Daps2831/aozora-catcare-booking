@@ -37,18 +37,18 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users,username',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
-            'role' => 'required|in:user,customer', // Hanya user dan customer yang diizinkan
-            // Validasi data customer (optional)
+            'role' => 'required|in:user,customer',
+            // Validasi data customer (optional) - HAPUS customer_username dari validasi
             'customer_name' => 'nullable|string|max:255',
-            'customer_username' => 'nullable|string|max:255',
             'customer_email' => 'nullable|email',
             'customer_kontak' => 'nullable|string|max:20',
             'customer_alamat' => 'nullable|string',
         ], [
+            'username.unique' => 'Username sudah digunakan.',
+            'email.unique' => 'Email sudah digunakan.',
             'role.in' => 'Role yang dipilih tidak valid. Hanya User dan Customer yang diizinkan.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'password.min' => 'Password minimal harus 8 karakter.',
-            'username.unique' => 'Username sudah digunakan, pilih username lain.',
         ]);
         
         // Proteksi tambahan: Pastikan tidak ada yang mencoba membuat admin
@@ -65,17 +65,13 @@ class UserController extends Controller
             'role' => $validated['role'],
         ]);
         
-        // Buat customer profile jika ada data customer yang diisi
-        if ($validated['role'] !== 'admin' && 
-            ($validated['customer_name'] || $validated['customer_username'] || 
-            $validated['customer_email'] || $validated['customer_kontak'] || 
-            $validated['customer_alamat'])) {
-            
+        // Buat customer profile - username SELALU sama dengan user username
+        if ($validated['role'] !== 'admin') {
             Customer::create([
                 'user_id' => $user->id,
-                'name' => $validated['customer_name'],
-                'username' => $validated['customer_username'],
-                'email' => $validated['customer_email'],
+                'name' => $validated['customer_name'] ?? $validated['name'],
+                'username' => $validated['username'], // PAKSA sama dengan username user
+                'email' => $validated['customer_email'] ?? $validated['email'],
                 'kontak' => $validated['customer_kontak'],
                 'alamat' => $validated['customer_alamat'],
             ]);
@@ -125,52 +121,60 @@ class UserController extends Controller
         // Validasi data user
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|min:8',
-            // Validasi data customer
+            // Validasi data customer (HAPUS customer_username dari validasi)
             'customer_name' => 'nullable|string|max:255',
-            'customer_username' => 'nullable|string|max:255',
             'customer_email' => 'nullable|email',
             'customer_kontak' => 'nullable|string|max:20',
             'customer_alamat' => 'nullable|string',
         ], [
+            'username.unique' => 'Username sudah digunakan.',
+            'email.unique' => 'Email sudah digunakan.',
             'password.min' => 'Password minimal harus 8 karakter.',
         ]);
         
+        // Simpan username lama untuk perbandingan
+        $oldUsername = $user->username;
+        
         // Update data user
-        $userData = [
+        $user->update([
             'name' => $validated['name'],
+            'username' => $validated['username'],
             'email' => $validated['email'],
-        ];
+            'password' => $validated['password'] ? bcrypt($validated['password']) : $user->password,
+        ]);
         
-        // Update password jika diisi
-        if (!empty($validated['password'])) {
-            $userData['password'] = bcrypt($validated['password']);
-        }
-        
-        $user->update($userData);
-        
-        // Update atau create data customer untuk semua user kecuali admin
-        if ($user->role !== 'admin') {
-            $customerData = [
-                'name' => $validated['customer_name'],
-                'username' => $validated['customer_username'],
-                'email' => $validated['customer_email'],
+        // Update atau buat customer profile
+        if ($user->customer) {
+            // Update customer yang sudah ada
+            $user->customer->update([
+                'name' => $validated['customer_name'] ?? $validated['name'],
+                'username' => $validated['username'], // OTOMATIS SYNC dengan username user
+                'email' => $validated['customer_email'] ?? $validated['email'],
                 'kontak' => $validated['customer_kontak'],
                 'alamat' => $validated['customer_alamat'],
-            ];
-            
-            if ($user->customer) {
-                // Update existing customer
-                $user->customer->update($customerData);
-            } else {
-                // Create new customer profile
-                $customerData['user_id'] = $user->id;
-                Customer::create($customerData);
-            }
+            ]);
+        } else {
+            // Buat customer baru jika belum ada
+            Customer::create([
+                'user_id' => $user->id,
+                'name' => $validated['customer_name'] ?? $validated['name'],
+                'username' => $validated['username'], // OTOMATIS SYNC dengan username user
+                'email' => $validated['customer_email'] ?? $validated['email'],
+                'kontak' => $validated['customer_kontak'],
+                'alamat' => $validated['customer_alamat'],
+            ]);
         }
         
-        return redirect()->route('admin.users.index')->with('success', 'User berhasil diupdate');
+        // Pesan sukses dengan info username sync
+        $message = 'User berhasil diupdate';
+        if ($oldUsername !== $validated['username']) {
+            $message .= '. Username customer otomatis berubah dari "' . $oldUsername . '" menjadi "' . $validated['username'] . '"';
+        }
+        
+        return redirect()->route('admin.users.show', $user->id)->with('success', $message);
     }
 
     /**
@@ -192,7 +196,18 @@ class UserController extends Controller
                 ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
         
+        // Simpan nama user untuk pesan konfirmasi
+        $userName = $user->name;
+        $userEmail = $user->email;
+        $userUsername = $user->username ?? 'N/A';
+        
+        // Hapus user - cascade delete akan otomatis menghapus:
+        // 1. Data customer terkait
+        // 2. Semua data kucing terkait
+        // 3. File gambar kucing (handled by boot method)
         $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus');
+        
+        return redirect()->route('admin.users.index')
+            ->with('success', "User '{$userName}' (Email: {$userEmail}, Username: {$userUsername}) dan semua data terkaitnya berhasil dihapus. Email dan username dapat digunakan kembali.");
     }
 }

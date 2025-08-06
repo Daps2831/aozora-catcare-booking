@@ -69,9 +69,21 @@
                             {{-- Tampilkan status customer untuk semua user selain admin --}}
                             @if($user->role !== 'admin')
                                 @if($user->customer)
-                                    <span class="badge badge-success">Profil Lengkap</span>
+                                    @php
+                                        $isComplete = $user->customer->name && 
+                                                    $user->customer->username && 
+                                                    $user->customer->email && 
+                                                    $user->customer->kontak && 
+                                                    $user->customer->alamat;
+                                    @endphp
+                                    
+                                    @if($isComplete)
+                                        <span class="badge badge-success">Profil Lengkap</span>
+                                    @else
+                                        <span class="badge badge-warning">Profil Belum Lengkap</span>
+                                    @endif
                                 @else
-                                    <span class="badge badge-warning">Profil Kosong</span>
+                                    <span class="badge badge-danger">Profil Kosong</span>
                                 @endif
                             @else
                                 <span class="text-muted">-</span>

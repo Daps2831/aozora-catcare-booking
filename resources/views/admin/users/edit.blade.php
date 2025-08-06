@@ -29,72 +29,70 @@
             @csrf
             @method('PUT')
             
-            {{-- Informasi Akun User --}}
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-user"></i> Informasi Akun</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="name">Nama Lengkap <span class="text-danger">*</span></label>
-                                <input type="text" 
-                                       name="name" 
-                                       id="name"
-                                       class="form-control @error('name') is-invalid @enderror" 
-                                       value="{{ old('name', $user->name) }}" 
-                                       required>
-                                @error('name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="email">Email <span class="text-danger">*</span></label>
-                                <input type="email" 
-                                       name="email" 
-                                       id="email"
-                                       class="form-control @error('email') is-invalid @enderror" 
-                                       value="{{ old('email', $user->email) }}" 
-                                       required>
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+       
+            {{-- Update bagian informasi akun user --}}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="name">Nama Lengkap <span class="text-danger">*</span></label>
+                        <input type="text" 
+                            name="name" 
+                            id="name"
+                            class="form-control @error('name') is-invalid @enderror" 
+                            value="{{ old('name', $user->name) }}" 
+                            required>
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="password">Password Baru</label>
-                                <input type="password" 
-                                    name="password" 
-                                    id="password"
-                                    class="form-control @error('password') is-invalid @enderror" 
-                                    minlength="8"
-                                    placeholder="Kosongkan jika tidak ingin mengubah password">
-                                @error('password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <small class="text-muted">Minimal 8 karakter</small>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Role Saat Ini</label>
-                                <div class="mt-2">
-                                    <span class="badge badge-{{ $user->role == 'admin' ? 'danger' : 'primary' }} badge-lg">
-                                        {{ ucfirst($user->role) }}
-                                    </span>
-                                    <small class="text-muted ml-2">Role tidak dapat diubah saat edit</small>
-                                </div>
-                            </div>
-                        </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="username">Username <span class="text-danger">*</span></label>
+                        <input type="text" 
+                            name="username" 
+                            id="username"
+                            class="form-control @error('username') is-invalid @enderror" 
+                            value="{{ old('username', $user->username) }}" 
+                            required>
+                        @error('username')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Username customer akan otomatis berubah mengikuti username ini</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="email">Email <span class="text-danger">*</span></label>
+                        <input type="email" 
+                            name="email" 
+                            id="email"
+                            class="form-control @error('email') is-invalid @enderror" 
+                            value="{{ old('email', $user->email) }}" 
+                            required>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="password">Password Baru</label>
+                        <input type="password" 
+                            name="password" 
+                            id="password"
+                            class="form-control @error('password') is-invalid @enderror" 
+                            minlength="8"
+                            placeholder="Kosongkan jika tidak ingin mengubah password">
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Minimal 8 karakter</small>
                     </div>
                 </div>
             </div>
@@ -106,16 +104,24 @@
                     <h5 class="mb-0"><i class="fas fa-address-card"></i> Informasi Customer</h5>
                 </div>
                 <div class="card-body">
+                    {{-- Info tentang username sync --}}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Username Customer:</strong> 
+                        <span class="badge badge-primary">{{ $user->customer->username ?? $user->username }}</span>
+                        <small class="text-muted">(Otomatis sama dengan username akun)</small>
+                    </div>
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="customer_name">Nama Customer</label>
                                 <input type="text" 
-                                       name="customer_name" 
-                                       id="customer_name"
-                                       class="form-control @error('customer_name') is-invalid @enderror" 
-                                       value="{{ old('customer_name', $user->customer->name ?? '') }}" 
-                                       placeholder="Nama lengkap customer">
+                                    name="customer_name" 
+                                    id="customer_name"
+                                    class="form-control @error('customer_name') is-invalid @enderror" 
+                                    value="{{ old('customer_name', $user->customer->name ?? '') }}" 
+                                    placeholder="Nama lengkap customer">
                                 @error('customer_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -124,14 +130,14 @@
                         
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="customer_username">Username Customer</label>
-                                <input type="text" 
-                                       name="customer_username" 
-                                       id="customer_username"
-                                       class="form-control @error('customer_username') is-invalid @enderror" 
-                                       value="{{ old('customer_username', $user->customer->username ?? '') }}" 
-                                       placeholder="Username customer">
-                                @error('customer_username')
+                                <label for="customer_email">Email Customer</label>
+                                <input type="email" 
+                                    name="customer_email" 
+                                    id="customer_email"
+                                    class="form-control @error('customer_email') is-invalid @enderror" 
+                                    value="{{ old('customer_email', $user->customer->email ?? '') }}" 
+                                    placeholder="Email customer">
+                                @error('customer_email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -141,45 +147,32 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="customer_email">Email Customer</label>
-                                <input type="email" 
-                                       name="customer_email" 
-                                       id="customer_email"
-                                       class="form-control @error('customer_email') is-invalid @enderror" 
-                                       value="{{ old('customer_email', $user->customer->email ?? '') }}" 
-                                       placeholder="Email customer">
-                                @error('customer_email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label for="customer_kontak">Nomor Telepon</label>
                                 <input type="text" 
-                                       name="customer_kontak" 
-                                       id="customer_kontak"
-                                       class="form-control @error('customer_kontak') is-invalid @enderror" 
-                                       value="{{ old('customer_kontak', $user->customer->kontak ?? '') }}" 
-                                       placeholder="Nomor telepon customer">
+                                    name="customer_kontak" 
+                                    id="customer_kontak"
+                                    class="form-control @error('customer_kontak') is-invalid @enderror" 
+                                    value="{{ old('customer_kontak', $user->customer->kontak ?? '') }}" 
+                                    placeholder="Nomor telepon customer">
                                 @error('customer_kontak')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="customer_alamat">Alamat</label>
-                        <textarea name="customer_alamat" 
-                                  id="customer_alamat"
-                                  class="form-control @error('customer_alamat') is-invalid @enderror" 
-                                  rows="3" 
-                                  placeholder="Alamat lengkap customer">{{ old('customer_alamat', $user->customer->alamat ?? '') }}</textarea>
-                        @error('customer_alamat')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="customer_alamat">Alamat</label>
+                                <textarea name="customer_alamat" 
+                                        id="customer_alamat"
+                                        class="form-control @error('customer_alamat') is-invalid @enderror" 
+                                        rows="3" 
+                                        placeholder="Alamat lengkap customer">{{ old('customer_alamat', $user->customer->alamat ?? '') }}</textarea>
+                                @error('customer_alamat')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -226,11 +219,30 @@
 @section('js')
 <script>
 $(document).ready(function() {
-    // Toggle password visibility
-    $('#showPassword').change(function() {
-        const passwordField = $('#password');
-        const type = $(this).is(':checked') ? 'text' : 'password';
-        passwordField.attr('type', type);
+    // Real-time preview username customer
+    $('#username').on('input', function() {
+        const username = $(this).val();
+        $('.badge-primary').text(username || '{{ $user->username }}');
+        
+        // Visual feedback
+        $('.alert-info').addClass('border-warning');
+        setTimeout(function() {
+            $('.alert-info').removeClass('border-warning');
+        }, 300);
+    });
+    
+    // Konfirmasi jika username berubah
+    let originalUsername = '{{ $user->username }}';
+    $('#username').on('blur', function() {
+        const newUsername = $(this).val();
+        if (newUsername !== originalUsername && newUsername !== '') {
+            $(this).after('<small class="text-warning"><i class="fas fa-exclamation-triangle"></i> Username customer akan otomatis berubah menjadi "' + newUsername + '"</small>');
+            
+            // Remove warning after 3 seconds
+            setTimeout(function() {
+                $('#username').siblings('.text-warning').remove();
+            }, 3000);
+        }
     });
 });
 </script>

@@ -182,11 +182,28 @@ class BookingController extends Controller
     public function riwayat()
     {
         $user = auth()->user();
-        $customerId = $user->customer->id ?? $user->id;
+        
+        // Pastikan user memiliki customer profile
+        if (!$user->customer) {
+            return redirect()->route('dashboard')->with('error', 'Profile customer tidak ditemukan.');
+        }
+        
+        $customerId = $user->customer->id;
+        
+        // Load riwayat booking dengan pivot data (termasuk catatan)
         $riwayatBookings = Booking::where('customer_id', $customerId)
-            ->with(['layanan', 'kucings'])
-            ->latest()
+            ->with([
+                'customer',
+                'tim',
+                'kucings' => function($query) {
+                    // PENTING: Load pivot dengan layanan_id dan catatan
+                    $query->withPivot('layanan_id', 'catatan');
+                }
+            ])
+            ->orderBy('tanggalBooking', 'desc')
+            ->orderBy('jamBooking', 'desc')
             ->get();
+            
         return view('customer.riwayat', compact('riwayatBookings'));
     }
 

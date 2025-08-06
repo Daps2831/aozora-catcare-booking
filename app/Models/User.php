@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -7,30 +8,65 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Hash;  // Pastikan ini ditambahkan
-use Illuminate\Support\Facades\Auth;  // Pastikan ini ditambahkan
-use Illuminate\Foundation\Auth\User as Authenticatable;  // Gunakan class User dari Auth
-
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
     use HasApiTokens, Notifiable, SoftDeletes, HasFactory;
 
-    // Menentukan kolom yang bisa diisi secara massal
     protected $fillable = [
         'name', 'username', 'email', 'password', 'role', 'kontak', 'alamat', 
     ];
 
-    // Menentukan kolom yang tidak bisa diisi
     protected $guarded = [];
 
-    // Menyembunyikan kolom sensitif
     protected $hidden = [
         'password', 'remember_token',
     ];
 
-    // Kolom yang akan diterima oleh Laravel untuk SoftDeletes
     protected $dates = ['deleted_at'];
+
+    // Boot method untuk handle cascade delete dan cleanup files
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Sync username ketika user diupdate
+        static::updated(function ($user) {
+            if ($user->customer && $user->wasChanged('username')) {
+                // Log untuk debugging
+                \Log::info('Syncing username from user to customer', [
+                    'user_id' => $user->id,
+                    'old_username' => $user->getOriginal('username'),
+                    'new_username' => $user->username
+                ]);
+                
+                $user->customer->update([
+                    'username' => $user->username
+                ]);
+            }
+        });
+
+        static::deleting(function ($user) {
+            // Hapus semua foto kucing sebelum user dihapus
+            if ($user->customer && $user->customer->kucings) {
+                foreach ($user->customer->kucings as $kucing) {
+                    if ($kucing->gambar && Storage::disk('public')->exists($kucing->gambar)) {
+                        Storage::disk('public')->delete($kucing->gambar);
+                    }
+                }
+            }
+
+            // Manual delete customer dan kucing jika belum ada foreign key constraint
+            if ($user->customer) {
+                $user->customer->kucings()->delete();
+                $user->customer->delete();
+            }
+        });
+    }
 
     // Relasi dengan tabel Customer
     public function customer() 
@@ -44,7 +80,7 @@ class User extends Authenticatable
         return $this->hasOne(Admin::class);
     }
 
-        // Relasi dengan Kucing (One-to-Many melalui Customer)
+    // Relasi dengan Kucing (One-to-Many melalui Customer)
     public function kucing()
     {
         return $this->hasManyThrough(Kucing::class, Customer::class);
@@ -81,7 +117,7 @@ class User extends Authenticatable
     {
         $user = self::loginWithEmailAndPassword($email, $password);
         if ($user) {
-            Auth::login($user);  // Login otomatis jika user ditemukan
+            Auth::login($user);
         }
         return $user;
     }
@@ -96,7 +132,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Kucing::class, 'user_id');
     }
-
-   
 }
-

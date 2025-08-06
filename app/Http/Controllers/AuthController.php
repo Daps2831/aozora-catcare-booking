@@ -25,10 +25,22 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        // Mencoba login dengan kredensial
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        // Ambil nilai remember dari checkbox
+        $remember = $request->has('remember');
+        
+        // Kredensial untuk login
+        $credentials = [
+            'email' => $request->email, 
+            'password' => $request->password
+        ];
+
+        // Mencoba login dengan kredensial DAN remember parameter
+        if (Auth::attempt($credentials, $remember)) {
             // Ambil user yang sedang login
             $user = Auth::user();
+
+            // Regenerate session untuk keamanan
+            $request->session()->regenerate();
 
             // Cek apakah role user adalah admin
             if ($user->role === 'admin') {
@@ -43,7 +55,7 @@ class AuthController extends Controller
         // Jika gagal login, kembali ke form login dengan pesan error
         return back()->withErrors([
             'email' => 'Email atau password salah.',
-        ]);
+        ])->withInput($request->only('email', 'remember')); // Pertahankan nilai email dan remember
     }
 
     // Menampilkan halaman registrasi
