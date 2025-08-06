@@ -124,8 +124,9 @@
                                 <option value="">-- Pilih Layanan --</option>
                                 @foreach($layanans as $layanan)
                                     <option value="{{ $layanan->id }}"
+                                        data-harga="{{ $layanan->harga }}"
                                         {{ old('layanan_per_kucing.' . $kucing->id) == $layanan->id ? 'selected' : '' }}>
-                                        {{ $layanan->nama_layanan }}
+                                        {{ $layanan->nama_layanan }} - Rp {{ number_format($layanan->harga, 0, ',', '.') }}
                                     </option>
                                 @endforeach
                             </select>
@@ -142,7 +143,47 @@
         <button type="submit" class="cta-btn-diteks" style="width: 100%; max-width: none;">Kirim Booking</button>
     </form>
 
+    {{-- Tambahkan di bawah form --}}
+    <div id="hargaTotalContainer" style="margin-top: 20px; font-weight: bold;">
+        Total Harga: <span id="hargaTotal">Rp 0</span>
+    </div>
+
     <div style="margin-top: 20px;">
         <a href="{{ route('booking.index') }}" class="btn-back" style="width: 100%; max-width: none;">Kembali ke Pilih Tanggal</a>
 </div>
 @endsection
+
+<style>
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .checkbox-group {
+        max-height: 200px; /* Kurangi tinggi untuk layar kecil */
+        overflow-y: auto;
+    }
+
+    .kucing-item {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .kucing-info img {
+        max-width: 100px; /* Ukuran gambar lebih kecil */
+        height: auto;
+    }
+
+    .layanan-container select {
+        width: 100%; /* Dropdown memenuhi lebar layar */
+    }
+}
+</style>

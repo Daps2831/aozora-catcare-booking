@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initSelectAll();
     initFullCalendar();
     initUserDropdown();
+    initTotalHargaBooking();
 });
 
 /**
@@ -640,6 +641,61 @@ window.initBookingChart = function(labels7, labels30, labels365, data7, data30, 
     });
 }
 
+//grafik masa depan
+window.initBookingChartFuture = function(labels7Future, labels30Future, labels365Future, data7Future, data30Future, data365Future) {
+    const allLabelsFuture = {
+        7: labels7Future,
+        30: labels30Future,
+        365: labels365Future
+    };
+    const allDataFuture = {
+        7: data7Future,
+        30: data30Future,
+        365: data365Future
+    };
+
+    let chartTypeFuture = 'bar';
+    let chartPeriodFuture = '7';
+
+    function getDatasetFuture(type, period) {
+        return [{
+            label: 'Booking Masa Depan',
+            data: allDataFuture[period],
+            backgroundColor: type === 'bar' ? 'rgba(75, 192, 192, 0.5)' : 'rgba(0,0,0,0)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            fill: false,
+            tension: 0.3,
+            pointRadius: type === 'line' ? 3 : 0
+        }];
+    }
+
+    var ctxFuture = document.getElementById('bookingChartFuture').getContext('2d');
+    var myChartFuture = new Chart(ctxFuture, {
+        type: chartTypeFuture,
+        data: {
+            labels: allLabelsFuture[chartPeriodFuture],
+            datasets: getDatasetFuture(chartTypeFuture, chartPeriodFuture)
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+    document.getElementById('chartPeriodFuture').addEventListener('change', function() {
+        chartPeriodFuture = this.value;
+        myChartFuture.data.labels = allLabelsFuture[chartPeriodFuture];
+        myChartFuture.data.datasets = getDatasetFuture(chartTypeFuture, chartPeriodFuture);
+        myChartFuture.update();
+    });
+
+    document.getElementById('chartTypeFuture').addEventListener('change', function() {
+        chartTypeFuture = this.value;
+        myChartFuture.config.type = chartTypeFuture;
+        myChartFuture.data.datasets = getDatasetFuture(chartTypeFuture, chartPeriodFuture);
+        myChartFuture.update();
+    });
+};
+
 function initFullCalendarAdmin() {
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl || typeof FullCalendar === "undefined") return;
@@ -691,4 +747,31 @@ function initFullCalendarAdmin() {
         }
     });
     calendar.render();
+}
+
+function initTotalHargaBooking() {
+    const layananSelects = document.querySelectorAll(".layanan-container select");
+    const hargaTotalContainer = document.getElementById("hargaTotal");
+    let totalHarga = 0;
+
+    // Fungsi untuk menghitung total harga
+    const updateTotalHarga = () => {
+        totalHarga = 0;
+        layananSelects.forEach(select => {
+            const selectedOption = select.options[select.selectedIndex];
+            const harga = parseInt(selectedOption.dataset.harga || 0);
+            if (!select.disabled && harga) {
+                totalHarga += harga;
+            }
+        });
+        hargaTotalContainer.textContent = `Rp ${totalHarga.toLocaleString("id-ID")}`;
+    };
+
+    // Tambahkan event listener untuk setiap dropdown layanan
+    layananSelects.forEach(select => {
+        select.addEventListener("change", updateTotalHarga);
+    });
+
+    // Panggil fungsi saat halaman pertama kali dimuat
+    updateTotalHarga();
 }

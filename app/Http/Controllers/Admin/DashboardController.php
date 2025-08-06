@@ -32,7 +32,7 @@ class DashboardController extends Controller
     for ($i = 6; $i >= 0; $i--) {
         $date = \Carbon\Carbon::today()->subDays($i);
         $labels7[] = $date->format('d M');
-        $data7[] = Booking::whereDate('created_at', $date)->count();
+        $data7[] = Booking::whereDate('tanggalBooking', $date)->count(); // Ganti created_at menjadi tanggalBooking
     }
 
     $labels30 = [];
@@ -40,7 +40,7 @@ class DashboardController extends Controller
     for ($i = 29; $i >= 0; $i--) {
         $date = \Carbon\Carbon::today()->subDays($i);
         $labels30[] = $date->format('d M');
-        $data30[] = Booking::whereDate('created_at', $date)->count();
+        $data30[] = Booking::whereDate('tanggalBooking', $date)->count(); // Ganti created_at menjadi tanggalBooking
     }
 
     $labels365 = [];
@@ -48,7 +48,34 @@ class DashboardController extends Controller
     for ($i = 364; $i >= 0; $i -= 30) {
         $date = \Carbon\Carbon::today()->subDays($i);
         $labels365[] = $date->format('M Y');
-        $data365[] = Booking::whereMonth('created_at', $date->month)->whereYear('created_at', $date->year)->count();
+        $data365[] = Booking::whereMonth('tanggalBooking', $date->month)
+                            ->whereYear('tanggalBooking', $date->year)->count(); // Ganti created_at menjadi tanggalBooking
+    }
+
+    // Tambahkan setelah perhitungan grafik tren booking
+    $labels7Future = [];
+    $data7Future = [];
+    for ($i = 0; $i < 7; $i++) {
+        $date = \Carbon\Carbon::today()->addDays($i);
+        $labels7Future[] = $date->format('d M');
+        $data7Future[] = Booking::whereDate('tanggalBooking', $date)->count();
+    }
+
+    $labels30Future = [];
+    $data30Future = [];
+    for ($i = 0; $i < 30; $i++) {
+        $date = \Carbon\Carbon::today()->addDays($i);
+        $labels30Future[] = $date->format('d M');
+        $data30Future[] = Booking::whereDate('tanggalBooking', $date)->count();
+    }
+
+    $labels365Future = [];
+    $data365Future = [];
+    for ($i = 0; $i < 365; $i += 30) {
+        $date = \Carbon\Carbon::today()->addDays($i);
+        $labels365Future[] = $date->format('M Y');
+        $data365Future[] = Booking::whereMonth('tanggalBooking', $date->month)
+                                ->whereYear('tanggalBooking', $date->year)->count();
     }
 
     // Jam/jadwal paling ramai
@@ -87,7 +114,8 @@ class DashboardController extends Controller
         'totalUser', 'userBaruBulanIni', 'userAktifBulanIni',
         'totalKucing', 'jenisFavorit',
         'layananPopuler', 'bookingPerLayanan',
-        'totalPendapatan', 'pendapatanPerLayanan'
+        'totalPendapatan', 'pendapatanPerLayanan',
+        'labels7Future', 'data7Future', 'labels30Future', 'data30Future', 'labels365Future', 'data365Future'
     ));
 }
 }

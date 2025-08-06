@@ -86,6 +86,27 @@
     </div>
 </div>
 
+{{-- Grafik Tren Booking Masa Depan --}}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Grafik Booking Masa Depan</h3>
+        <div>
+            <select id="chartPeriodFuture" class="form-select d-inline" style="width: 140px;">
+                <option value="7">7 Hari Ke Depan</option>
+                <option value="30">1 Bulan Ke Depan</option>
+                <option value="365">1 Tahun Ke Depan</option>
+            </select>
+            <select id="chartTypeFuture" class="form-select d-inline" style="width: 120px;">
+                <option value="bar">Grafik Batang</option>
+                <option value="line">Grafik Garis</option>
+            </select>
+        </div>
+    </div>
+    <div class="card-body">
+        <canvas id="bookingChartFuture" height="100"></canvas>
+    </div>
+</div>
+
 {{-- Statistik Lainnya --}}
 <div class="row">
     <div class="col-md-4">
@@ -143,6 +164,18 @@
             {!! json_encode($data7 ?? $data) !!},
             {!! json_encode($data30 ?? $data) !!},
             {!! json_encode($data365 ?? $data) !!}
+        );
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        window.initBookingChartFuture(
+            {!! json_encode($labels7Future) !!},
+            {!! json_encode($labels30Future) !!},
+            {!! json_encode($labels365Future) !!},
+            {!! json_encode($data7Future) !!},
+            {!! json_encode($data30Future) !!},
+            {!! json_encode($data365Future) !!}
         );
     });
 </script>
