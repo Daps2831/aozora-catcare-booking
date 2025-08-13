@@ -67,6 +67,15 @@
         </div>
     </div>
 
+    <!-- Toggle Selesai -->
+    <div style="margin-bottom: 16px;">
+        <label class="switch">
+            <input type="checkbox" id="show-finished-booking">
+            <span class="slider"></span>
+            <span class="switch-label">Tampilkan Booking Selesai</span>
+        </label>
+    </div>
+
     <!-- Calendar Container -->
     <div class="calendar-wrapper">
         <div id="calendar" class="calendar-customer"
@@ -95,6 +104,50 @@
 
 @section('css')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.5/main.min.css" rel="stylesheet" />
+<style>
+/* Custom Switch Toggle */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.switch input[type="checkbox"] {
+  display: none;
+}
+.switch .slider {
+  width: 38px;
+  height: 20px;
+  background: #d1d5db;
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s;
+  margin-right: 10px;
+}
+.switch input:checked + .slider {
+  background: #4ade80;
+}
+.switch .slider::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.switch input:checked + .slider::before {
+  transform: translateX(18px);
+}
+.switch-label {
+  font-size: 15px;
+  color: #222;
+  font-weight: 500;
+}
+</style>
 @endsection
 
 @section('js')

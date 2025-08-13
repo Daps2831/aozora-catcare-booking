@@ -226,6 +226,25 @@ function initFullCalendar() {
     let fullDates = [];
     let disabledDatesData = {};
     let events = [];
+
+    // Tambahkan filter event selesai
+    const showFinishedCheckbox = document.getElementById('show-finished-booking');
+    let allEvents = [];
+    if (calendarEl.dataset.events) {
+        try { allEvents = JSON.parse(calendarEl.dataset.events); } catch (e) { allEvents = []; }
+    }
+
+    // Fungsi untuk filter event sesuai status checkbox
+    function getFilteredEvents() {
+        if (showFinishedCheckbox && !showFinishedCheckbox.checked) {
+            // Hanya tampilkan event yang BUKAN selesai
+            return allEvents.filter(ev => 
+                !ev.statusBooking || ev.statusBooking.toLowerCase() !== 'selesai'
+            );
+        }
+        return allEvents;
+    }
+    
     
     if (calendarEl.dataset.fullDates) {
         try { 
@@ -258,7 +277,7 @@ function initFullCalendar() {
         initialView: 'dayGridMonth',
         locale: 'id',
         selectable: true,
-        events: events,
+        events: getFilteredEvents(),
         timeZone: 'UTC',
       
         eventContent: function(arg) {
@@ -375,6 +394,14 @@ function initFullCalendar() {
         },
     });
     calendar.render();
+
+    // Tambahkan event listener pada checkbox
+    if (showFinishedCheckbox) {
+        showFinishedCheckbox.addEventListener('change', function() {
+            calendar.removeAllEvents();
+            calendar.addEventSource(getFilteredEvents());
+        });
+    }
 
     btnKonfirmasi.addEventListener('click', function () {
         if (selectedDate && !fullDates.includes(selectedDate) && !disabledDatesData[selectedDate]) {
