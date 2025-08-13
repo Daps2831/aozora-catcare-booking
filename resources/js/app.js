@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initUserDropdown();
     initTotalHargaBooking();
     initBookingTimeValidation();
+    initCatSlider();
 });
 
 /**
@@ -386,49 +387,54 @@ function initFullCalendar() {
 
 //fungsi alamat
 function initAddress() {
-    const alamatDefaultEl = document.getElementById("alamatDefault");
     const alamatBookingInput = document.getElementById("alamatBookingInput");
     const radioDefault = document.getElementById("alamat_default");
     const radioManual = document.getElementById("alamat_manual");
 
     // Pastikan semua elemen ada sebelum lanjut
-    if (
-        !alamatDefaultEl ||
-        !alamatBookingInput ||
-        !radioDefault ||
-        !radioManual
-    )
-        return;
+    if (!alamatBookingInput || !radioDefault || !radioManual) return;
 
-    const alamatDefaultText = alamatDefaultEl.textContent;
+    // Ambil alamat default dari user (dari value input)
+    const alamatDefaultText = alamatBookingInput.defaultValue || alamatBookingInput.value;
 
     // Listener saat radio "Alamat Sesuai Profil" dipilih
     radioDefault.addEventListener("change", function () {
         if (this.checked) {
             alamatBookingInput.value = alamatDefaultText;
             alamatBookingInput.readOnly = true;
+            alamatBookingInput.style.backgroundColor = '#e9ecef';
+            alamatBookingInput.style.cursor = 'not-allowed';
         }
     });
 
     // Listener saat radio "Masukkan Alamat Lain" dipilih
     radioManual.addEventListener("change", function () {
         if (this.checked) {
-            // Kita tidak lagi mengosongkan input, agar pengguna bisa mengedit alamat default
-            alamatBookingInput.value = ""; // Baris ini bisa di-nonaktifkan atau dihapus
             alamatBookingInput.readOnly = false;
+            alamatBookingInput.style.backgroundColor = '#f8f9fa';
+            alamatBookingInput.style.cursor = 'text';
             alamatBookingInput.focus();
+            // Kosongkan input agar user bisa ketik alamat baru
+            alamatBookingInput.value = "";
         }
     });
 
-    // === BAGIAN BARU YANG DITAMBAHKAN ===
     // Listener saat pengguna fokus pada kolom input alamat
     alamatBookingInput.addEventListener("focus", function () {
         // Hanya jalankan jika pilihan saat ini adalah "Alamat Sesuai Profil"
         if (radioDefault.checked) {
             // Secara otomatis "klik" radio button "Masukkan alamat lain"
-            radioManual.click();
+            radioManual.checked = true;
+            radioManual.dispatchEvent(new Event('change'));
         }
     });
+
+    // Set kondisi awal
+    if (radioDefault.checked) {
+        alamatBookingInput.readOnly = true;
+        alamatBookingInput.style.backgroundColor = '#e9ecef';
+        alamatBookingInput.style.cursor = 'not-allowed';
+    }
 }
 
 //fungsi jam
@@ -773,26 +779,46 @@ function initFullCalendarAdmin() {
 }
 
 function initTotalHargaBooking() {
-    const layananSelects = document.querySelectorAll(".layanan-container select");
     const hargaTotalContainer = document.getElementById("hargaTotal");
+    
+    // Pastikan element ada
+    if (!hargaTotalContainer) return;
+    
     let totalHarga = 0;
 
     // Fungsi untuk menghitung total harga
     const updateTotalHarga = () => {
         totalHarga = 0;
-        layananSelects.forEach(select => {
-            const selectedOption = select.options[select.selectedIndex];
-            const harga = parseInt(selectedOption.dataset.harga || 0);
-            if (!select.disabled && harga) {
+        
+        // Cari semua kucing yang dicentang
+        const checkedKucing = document.querySelectorAll('.kucing-checkbox:checked');
+        
+        checkedKucing.forEach(checkbox => {
+            const kucingId = checkbox.value;
+            const layananSelect = document.querySelector(`#layanan_container_${kucingId} select`);
+            
+            if (layananSelect && layananSelect.value) {
+                const selectedOption = layananSelect.options[layananSelect.selectedIndex];
+                const harga = parseInt(selectedOption.dataset.harga || 0);
                 totalHarga += harga;
             }
         });
+        
         hargaTotalContainer.textContent = `Rp ${totalHarga.toLocaleString("id-ID")}`;
     };
 
-    // Tambahkan event listener untuk setiap dropdown layanan
-    layananSelects.forEach(select => {
-        select.addEventListener("change", updateTotalHarga);
+    // Event listener untuk checkbox kucing
+    document.querySelectorAll('.kucing-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateTotalHarga();
+        });
+    });
+
+    // Event listener untuk dropdown layanan
+    document.querySelectorAll('.service-select').forEach(select => {
+        select.addEventListener('change', function() {
+            updateTotalHarga();
+        });
     });
 
     // Panggil fungsi saat halaman pertama kali dimuat
@@ -921,4 +947,104 @@ function initBookingTimeValidation() {
     
     // Initial validation
     validateTime();
+}
+
+
+// slider pada buat booking jika kucing lebih dari 5
+function initCatSlider() {
+    const slider = document.getElementById('cats-slider');
+    const prevBtn = document.getElementById('prev-cats');
+    const nextBtn = document.getElementById('next-cats');
+    const indicatorsContainer = document.getElementById('slider-indicators');
+    
+    if (!slider) return; // Jika tidak ada slider, keluar
+    
+    const slides = slider.querySelectorAll('.cat-slide');
+    const slidesPerView = 2; // Tampilkan 2 kucing per slide
+    const totalSlides = Math.ceil(slides.length / slidesPerView);
+    let currentSlide = 0;
+    
+    // Generate indicators
+    if (indicatorsContainer) {
+        for (let i = 0; i < totalSlides; i++) {
+            const indicator = document.createElement('button');
+            indicator.type = 'button';
+            indicator.className = `indicator ${i === 0 ? 'active' : ''}`;
+            indicator.setAttribute('data-slide', i);
+            indicatorsContainer.appendChild(indicator);
+        }
+    }
+    
+    // Update slider position
+    function updateSlider() {
+        const translateX = -(currentSlide * 100);
+        slider.style.transform = `translateX(${translateX}%)`;
+        
+        // Update indicators
+        document.querySelectorAll('.indicator').forEach((indicator, index) => {
+            indicator.classList.toggle('active', index === currentSlide);
+        });
+        
+        // Update button states
+        if (prevBtn) prevBtn.disabled = currentSlide === 0;
+        if (nextBtn) nextBtn.disabled = currentSlide === totalSlides - 1;
+    }
+    
+    // Previous button
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlider();
+            }
+        });
+    }
+    
+    // Next button
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlider();
+            }
+        });
+    }
+    
+    // Indicator clicks
+    if (indicatorsContainer) {
+        indicatorsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('indicator')) {
+                currentSlide = parseInt(e.target.getAttribute('data-slide'));
+                updateSlider();
+            }
+        });
+    }
+    
+    // Touch/swipe support
+    let startX = 0;
+    let endX = 0;
+    
+    slider.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+    });
+    
+    slider.addEventListener('touchend', (e) => {
+        endX = e.changedTouches[0].clientX;
+        const deltaX = startX - endX;
+        
+        if (Math.abs(deltaX) > 50) { // Minimum swipe distance
+            if (deltaX > 0 && currentSlide < totalSlides - 1) {
+                // Swipe left (next)
+                currentSlide++;
+                updateSlider();
+            } else if (deltaX < 0 && currentSlide > 0) {
+                // Swipe right (prev)
+                currentSlide--;
+                updateSlider();
+            }
+        }
+    });
+    
+    // Initial update
+    updateSlider();
 }
