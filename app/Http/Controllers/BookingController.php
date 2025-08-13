@@ -56,127 +56,181 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        //dd($request->all()); // <-- TAMBAHKAN BARIS INI UNTUK DEBUG
-        // TAHAP 1: VALIDASI TERPUSAT
-        // Semua aturan validasi dan pesan kustom didefinisikan di awal.
+        $user = Auth::user();
+        if (!$user->customer) {
+            return back()->with('error', 'Profile customer tidak ditemukan.');
+        }
+
+        // 2. Enhanced validation dengan time check
         $rules = [
-            'tanggalBooking'    => 'required|date',
-            'jamBooking'        => 'required|date_format:H:i',
-            'alamatBooking'     => 'required|string|max:255',
-            'kucing_ids'        => 'required|array|min:1',
-            'kucing_ids.*'      => 'exists:kucings,id', // Pastikan setiap ID kucing ada di tabel kucings
-            'layanan_per_kucing'=> 'required|array',
+            'tanggalBooking' => 'required|date|after_or_equal:today',
+            'jamBooking' => [
+                'required',
+                'date_format:H:i',
+                function ($attribute, $value, $fail) use ($request) {
+                    $tanggalBooking = $request->input('tanggalBooking');
+                    $jamBooking = $value;
+                    
+                    // Gabungkan tanggal dan jam
+                    try {
+                        $bookingDateTime = Carbon::createFromFormat('Y-m-d H:i', 
+                            $tanggalBooking . ' ' . $jamBooking,
+                            config('app.timezone')
+                        );
+                        
+                        $now = Carbon::now(config('app.timezone'));
+                        
+                        // Check jika booking datetime sudah lewat
+                        if ($bookingDateTime->lte($now)) {
+                            $fail('Tidak dapat booking pada waktu yang sudah lewat. Waktu saat ini: ' . $now->format('d/m/Y H:i'));
+                        }
+                        
+                        // Check jika booking terlalu dekat (minimal 2 jam dari sekarang)
+                        $minimumBookingTime = $now->copy()->addHours(2);
+                        if ($bookingDateTime->lt($minimumBookingTime)) {
+                            $fail('Booking minimal 2 jam dari sekarang. Waktu minimal: ' . $minimumBookingTime->format('d/m/Y H:i'));
+                        }
+                        
+                    } catch (\Exception $e) {
+                        $fail('Format tanggal atau jam tidak valid.');
+                    }
+                }
+            ],
+            'alamatBooking' => 'required|string|max:255',
+            'kucing_ids' => 'required|array|min:1',
+            'kucing_ids.*' => [
+                'exists:kucings,id',
+                function ($attribute, $value, $fail) use ($user) {
+                    $kucing = \App\Models\Kucing::find($value);
+                    if (!$kucing || $kucing->customer_id !== $user->customer->id) {
+                        $fail('Kucing tidak ditemukan atau bukan milik Anda.');
+                    }
+                }
+            ],
+            'layanan_per_kucing' => 'required|array',
             'layanan_per_kucing.*' => 'required|integer|exists:layanans,id',
         ];
 
-        $messages = [
-            'kucing_ids.required'           => 'Anda harus memilih setidaknya satu kucing untuk booking.',
-            'kucing_ids.min'                => 'Anda harus memilih setidaknya satu kucing untuk booking.',
-            'layanan_per_kucing.*.required' => 'Silakan pilih layanan untuk setiap kucing yang dicentang.',
-            'layanan_per_kucing.*.exists'   => 'Layanan yang Anda pilih tidak valid.',
-        ];
+        $validatedData = $request->validate($rules);
 
-        $validatedData = $request->validate($rules, $messages);
-
-
-        // TAHAP 2: VALIDASI LOGIKA BISNIS (KUOTA HARIAN)
-        // Dilakukan setelah validasi dasar berhasil untuk efisiensi.
-        $tanggal = Carbon::parse($validatedData['tanggalBooking']);
-        
-        // Cek apakah tanggal dinonaktifkan admin dengan keterangan
-        $tanggalFormatted = $tanggal->utc()->format('Y-m-d');
-        $disabledDate = \App\Models\DisabledDate::whereDate('tanggal', $tanggalFormatted)->first();
-        if ($disabledDate) {
-            $keterangan = $disabledDate->keterangan ?? 'Tanggal dinonaktifkan admin';
-            return back()->with('error', "Maaf, tanggal yang dipilih tidak tersedia dikarenakan {$keterangan}. Silakan pilih tanggal lain.")->withInput();
-        }
-        
-        $jumlahKucingBaru = count($validatedData['kucing_ids']);
-
-        $kucingTerdaftarHariIni = Booking::whereDate('tanggalBooking', $tanggal)
-                                        ->withCount('kucings')
-                                        ->get()
-                                        ->sum('kucings_count');
-
-        if (($kucingTerdaftarHariIni + $jumlahKucingBaru) > 10) {
-            return back()->with('error', 'Maaf, kuota booking untuk tanggal yang dipilih sudah penuh atau tidak mencukupi.')->withInput();
-        }
-
-        // --- VALIDASI BENTROK JAM DAN TIM ---
-        $jumlahTim = \App\Models\TimGroomer::count();
-
-        $jamMulai = Carbon::parse($validatedData['tanggalBooking'] . ' ' . $validatedData['jamBooking']);
-        $totalEstimasi = 0;
-        foreach ($validatedData['kucing_ids'] as $kucingId) {
-            $layananId = $validatedData['layanan_per_kucing'][$kucingId];
-            $layanan = Layanan::find($layananId);
-            if ($layanan) {
-                $totalEstimasi += (int) $layanan->estimasi_pengerjaan_per_kucing;
-            }
-        }
-        $jamSelesai = $jamMulai->copy()->addMinutes($totalEstimasi);
-
-        // Hitung booking bentrok di tanggal yang sama
-        $bookingBentrok = Booking::whereDate('tanggalBooking', $tanggal)
-            ->where('statusBooking', '!=', 'Selesai') // hanya booking yang belum selesai
-            ->where(function($q) use ($jamMulai, $jamSelesai) {
-                $q->where(function($query) use ($jamMulai, $jamSelesai) {
-                    $query->where('jamBooking', '<', $jamSelesai->format('H:i'))
-                        ->whereRaw("ADDTIME(jamBooking, SEC_TO_TIME(estimasi*60)) > ?", [$jamMulai->format('H:i')]);
-                });
-            })
-            ->count();
-
-        if ($bookingBentrok >= $jumlahTim) {
-            return back()->with('error', 'Bentrok dengan jadwal lain dan tim yang tersedia sudah ditugaskan semua pada jam tersebut.')->withInput();
-        }
-
-
-
-        // TAHAP 3: PENYIMPANAN DATA DENGAN TRANSAKSI
-        // Memastikan semua data berhasil disimpan atau tidak sama sekali.
+        // 3. Double check setelah validasi
         DB::beginTransaction();
         try {
+            // Parse booking datetime dengan timezone yang benar
+            $bookingDateTime = Carbon::createFromFormat('Y-m-d H:i', 
+                $validatedData['tanggalBooking'] . ' ' . $validatedData['jamBooking'],
+                config('app.timezone')
+            );
+            
+            $now = Carbon::now(config('app.timezone'));
+            
+            // Final check - mencegah race condition
+            if ($bookingDateTime->lte($now)) {
+                DB::rollBack();
+                return back()->with('error', 'Waktu booking sudah lewat. Silakan pilih waktu yang akan datang.')
+                            ->withInput();
+            }
+
+            $tanggal = $bookingDateTime->startOfDay();
+
+            // 4. Check disabled date
+            $disabledDate = \App\Models\DisabledDate::whereDate('tanggal', $tanggal->format('Y-m-d'))->first();
+            if ($disabledDate) {
+                DB::rollBack();
+                return back()->with('error', "Tanggal tidak tersedia: {$disabledDate->keterangan}")
+                            ->withInput();
+            }
+
+            // 5. Check jam operasional
+            $jamOperasional = $this->getJamOperasional();
+            $jamBooking = $bookingDateTime->format('H:i');
+            
+            if ($jamBooking < $jamOperasional['buka'] || $jamBooking > $jamOperasional['tutup']) {
+                DB::rollBack();
+                return back()->with('error', "Jam operasional: {$jamOperasional['buka']} - {$jamOperasional['tutup']}")
+                            ->withInput();
+            }
+
+            // 6. Check kuota dengan lock
+            $kucingTerdaftarHariIni = Booking::whereDate('tanggalBooking', $tanggal)
+                                            ->lockForUpdate()
+                                            ->withCount('kucings')
+                                            ->get()
+                                            ->sum('kucings_count');
+
+            $jumlahKucingBaru = count($validatedData['kucing_ids']);
+
+            if (($kucingTerdaftarHariIni + $jumlahKucingBaru) > 10) {
+                DB::rollBack();
+                return back()->with('error', 'Kuota booking penuh')->withInput();
+            }
+
+            // 7. Kalkulasi estimasi sekali
+            $layananIds = array_values($validatedData['layanan_per_kucing']);
+            $layanans = Layanan::whereIn('id', $layananIds)->get()->keyBy('id');
             $totalEstimasi = 0;
+
             foreach ($validatedData['kucing_ids'] as $kucingId) {
                 $layananId = $validatedData['layanan_per_kucing'][$kucingId];
-                $layanan = Layanan::find($layananId);
-                if ($layanan) {
-                    $totalEstimasi += (int) $layanan->estimasi_pengerjaan_per_kucing;
+                if (isset($layanans[$layananId])) {
+                    $totalEstimasi += (int) $layanans[$layananId]->estimasi_pengerjaan_per_kucing;
                 }
             }
 
+            // 8. Check bentrok tim dengan query yang aman
+            $jamMulai = $tanggal->copy()->setTimeFromTimeString($validatedData['jamBooking']);
+            $jamSelesai = $jamMulai->copy()->addMinutes($totalEstimasi);
+
+            $bookingBentrok = Booking::whereDate('tanggalBooking', $tanggal)
+                ->where('statusBooking', '!=', 'Selesai')
+                ->where('jamBooking', '<', $jamSelesai->format('H:i'))
+                ->where(DB::raw('ADDTIME(jamBooking, SEC_TO_TIME(estimasi*60))'), '>', $jamMulai->format('H:i'))
+                ->lockForUpdate()
+                ->count();
+
+            $jumlahTim = \App\Models\TimGroomer::count();
+
+            if ($bookingBentrok >= $jumlahTim) {
+                DB::rollBack();
+                return back()->with('error', 'Bentrok dengan jadwal lain')->withInput();
+            }
+
+            // 9. Create booking
             $booking = Booking::create([
-                'customer_id'   => Auth::user()->customer->id,
-                'tanggalBooking'=> $validatedData['tanggalBooking'],
-                'jamBooking'    => $validatedData['jamBooking'],
+                'customer_id' => $user->customer->id,
+                'tanggalBooking' => $validatedData['tanggalBooking'],
+                'jamBooking' => $validatedData['jamBooking'],
                 'alamatBooking' => $validatedData['alamatBooking'],
                 'statusBooking' => 'Pending',
-                'estimasi'      => $totalEstimasi,
+                'estimasi' => $totalEstimasi,
             ]);
 
-            // Siapkan data untuk tabel pivot `booking_kucing`
+            // 10. Attach kucings
             $pivotData = [];
             foreach ($validatedData['kucing_ids'] as $kucingId) {
-                // Ambil layanan_id yang sesuai dari array layanan_per_kucing
                 $layananId = $validatedData['layanan_per_kucing'][$kucingId];
                 $pivotData[$kucingId] = ['layanan_id' => $layananId];
             }
-
-            // Simpan relasi ke tabel pivot dalam satu perintah
             $booking->kucings()->attach($pivotData);
 
-            DB::commit(); // Konfirmasi semua operasi database jika berhasil
+            DB::commit();
+
+            return redirect()->route('user.dashboard')
+                            ->with('success', 'Booking berhasil dibuat!');
 
         } catch (\Exception $e) {
-            DB::rollBack(); // Batalkan semua operasi jika terjadi kesalahan
+            DB::rollBack();
+            
+            \Log::error('Booking creation failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all()
+            ]);
 
-            // Mengembalikan pengguna dengan pesan error umum
-            return redirect()->back()->with('error', 'Terjadi kesalahan pada sistem saat membuat booking. Silakan coba lagi.')->withInput();
+            return back()->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.')
+                        ->withInput();
         }
-
-        // TAHAP 4: REDIRECT SETELAH SUKSES
-        return redirect()->route('user.dashboard')->with('success', 'Booking Anda telah berhasil dibuat!');
     }
 
     public function riwayat()
@@ -260,5 +314,14 @@ class BookingController extends Controller
             'events'    => $events,
         ]);
     }
+
+    private function getJamOperasional()
+{
+    // Bisa diambil dari config atau database
+    return [
+        'buka' => '08:00',
+        'tutup' => '17:00'
+    ];
+}
 }
 

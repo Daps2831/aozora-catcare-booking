@@ -52,6 +52,17 @@
                 >
             </div>
             <small id="jamBookingLabel" style="display:block;margin-top:0.5rem;">Jam dipilih: 08:00</small>
+            
+            {{-- Informasi jam operasional dan batasan --}}
+            <div style="margin-top: 0.5rem; padding: 8px; background: #e3f2fd; border-radius: 4px; font-size: 0.9em;">
+                <strong>Jam Operasional:</strong> 08:00 - 18:30<br>
+                @if(\Carbon\Carbon::parse($selectedDate)->isToday())
+                    <span style="color: #d32f2f;">
+                        <i class="fas fa-info-circle"></i>
+                        Booking minimal 2 jam dari sekarang ({{ \Carbon\Carbon::now()->addHours(2)->format('H:i') }})
+                    </span>
+                @endif
+            </div>
         </div>
 
         <div class="form-group alamat-container" style="margin-bottom: 1rem;">
@@ -154,6 +165,64 @@
 @endsection
 
 <style>
+/* =============================================== */
+/* BOOKING TIME VALIDATION STYLES */
+/* =============================================== */
+
+.alert.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alert.alert-danger::before {
+    content: '⚠';
+    font-size: 16px;
+    color: #721c24;
+}
+
+/* Disabled submit button style */
+button[type="submit"]:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    background-color: #6c757d !important;
+}
+
+/* Time input validation styles */
+input[type="time"]:invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Info box untuk jam operasional */
+.time-info-box {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 12px;
+    margin-top: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.time-info-box i {
+    color: #2196f3;
+    margin-right: 5px;
+}
+
+.time-warning {
+    color: #d32f2f;
+    font-weight: 500;
+}
+
+
 @media (max-width: 768px) {
     .container {
         width: 100%;
@@ -184,6 +253,16 @@
 
     .layanan-container select {
         width: 100%; /* Dropdown memenuhi lebar layar */
+    }
+
+    .alert.alert-danger {
+        font-size: 13px;
+        padding: 8px;
+    }
+    
+    .time-info-box {
+        font-size: 13px;
+        padding: 10px;
     }
 }
 </style>

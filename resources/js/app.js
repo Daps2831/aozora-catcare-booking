@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initFullCalendar();
     initUserDropdown();
     initTotalHargaBooking();
+    initBookingTimeValidation();
 });
 
 /**
@@ -492,39 +493,61 @@ function initKucingchecked() {
 // GANTIKAN FUNGSI LAMA DENGAN YANG INI
 function validateBookingForm() {
     const form = document.querySelector("#booking-form");
-    // Pastikan form ada di halaman ini sebelum lanjut
     if (!form) return;
 
     form.addEventListener("submit", function (event) {
-        // --- VALIDASI 1: Cek apakah minimal satu kucing dipilih ---
+        let hasError = false;
+        
+        // VALIDASI 1: Cek minimal satu kucing
         const checkedKucing = form.querySelectorAll(".kucing-checkbox:checked");
         if (checkedKucing.length === 0) {
-            // Hentikan pengiriman form
             event.preventDefault();
-            // Tampilkan peringatan
             alert("Anda harus memilih setidaknya satu kucing untuk booking.");
-            // Hentikan eksekusi fungsi agar tidak menampilkan alert kedua
             return;
         }
 
-        // --- VALIDASI 2: Cek apakah setiap kucing yang dipilih punya layanan ---
-        // Loop setiap kucing yang dicentang dan cek layanannya.
+        // VALIDASI 2: Cek layanan untuk setiap kucing
         for (let i = 0; i < checkedKucing.length; i++) {
             const checkbox = checkedKucing[i];
             const layananSelect = form.querySelector(
                 "#layanan_container_" + checkbox.value + " select"
             );
 
-            // ==========================================================
-            // ================== INI BARIS YANG DIPERBAIKI =============
-            // ==========================================================
-            // Cek jika elemen select tidak ada ATAU jika nilainya adalah string kosong.
             if (!layananSelect || layananSelect.value === "") {
                 event.preventDefault();
-                alert(
-                    "Silakan pilih layanan untuk setiap kucing yang dicentang."
-                );
-                return; // Langsung berhenti setelah menemukan error pertama.
+                alert("Silakan pilih layanan untuk setiap kucing yang dicentang.");
+                return;
+            }
+        }
+        
+        // VALIDASI 3: Cek waktu booking (tambahan)
+        const jamBooking = form.querySelector('input[name="jamBooking"]');
+        const tanggalBooking = form.querySelector('input[name="tanggalBooking"]');
+        
+        if (jamBooking && tanggalBooking) {
+            const selectedDate = tanggalBooking.value;
+            const selectedTime = jamBooking.value;
+            const now = new Date();
+            const isToday = selectedDate === now.toISOString().split('T')[0];
+            
+            if (isToday && selectedTime) {
+                const [hours, minutes] = selectedTime.split(':').map(Number);
+                const selectedDateTime = new Date();
+                selectedDateTime.setHours(hours, minutes, 0, 0);
+                
+                const minimumTime = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+                
+                if (selectedDateTime <= now) {
+                    event.preventDefault();
+                    alert('Tidak dapat booking pada waktu yang sudah lewat!');
+                    return;
+                }
+                
+                if (selectedDateTime < minimumTime) {
+                    event.preventDefault();
+                    alert('Booking minimal 2 jam dari sekarang!');
+                    return;
+                }
             }
         }
     });
@@ -774,4 +797,128 @@ function initTotalHargaBooking() {
 
     // Panggil fungsi saat halaman pertama kali dimuat
     updateTotalHarga();
+}
+
+// Tambahkan fungsi ini di bagian atas setelah initTotalHargaBooking()
+function initBookingTimeValidation() {
+    const jamBookingSlider = document.getElementById('jamBookingSlider');
+    const jamBookingManual = document.getElementById('jamBookingManual');
+    const jamBookingLabel = document.getElementById('jamBookingLabel');
+    const bookingForm = document.getElementById('booking-form');
+    
+    if (!jamBookingSlider || !jamBookingManual) return;
+
+    // Get current date and time
+    const now = new Date();
+    const selectedDate = document.querySelector('input[name="tanggalBooking"]')?.value;
+    
+    if (!selectedDate) return;
+    
+    const isToday = selectedDate === now.toISOString().split('T')[0];
+    
+    function validateTime() {
+        const selectedTime = jamBookingManual.value;
+        if (!selectedTime) return true;
+        
+        // Jika booking untuk hari ini
+        if (isToday) {
+            const [hours, minutes] = selectedTime.split(':').map(Number);
+            const selectedDateTime = new Date();
+            selectedDateTime.setHours(hours, minutes, 0, 0);
+            
+            // Minimal 2 jam dari sekarang
+            const minimumTime = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+            
+            if (selectedDateTime <= now) {
+                showTimeError('Tidak dapat booking pada waktu yang sudah lewat!');
+                return false;
+            }
+            
+            if (selectedDateTime < minimumTime) {
+                const minTimeStr = minimumTime.toTimeString().substring(0, 5);
+                showTimeError(`Booking minimal 2 jam dari sekarang. Waktu minimal: ${minTimeStr}`);
+                return false;
+            }
+        }
+        
+        clearTimeError();
+        return true;
+    }
+    
+    function showTimeError(message) {
+        let errorDiv = document.getElementById('time-error');
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.id = 'time-error';
+            errorDiv.className = 'alert alert-danger';
+            errorDiv.style.marginTop = '10px';
+            errorDiv.style.padding = '10px';
+            errorDiv.style.backgroundColor = '#f8d7da';
+            errorDiv.style.color = '#721c24';
+            errorDiv.style.border = '1px solid #f5c6cb';
+            errorDiv.style.borderRadius = '5px';
+            jamBookingManual.parentNode.appendChild(errorDiv);
+        }
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        
+        // Disable submit button
+        const submitBtn = bookingForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+        }
+    }
+    
+    function clearTimeError() {
+        const errorDiv = document.getElementById('time-error');
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+        
+        // Enable submit button
+        const submitBtn = bookingForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+        }
+    }
+    
+    // Update jam operasional untuk hari ini
+    if (isToday) {
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        
+        // Set minimum time untuk slider (2 jam dari sekarang)
+        const minSliderValue = Math.max(8, currentHour + 2 + (currentMinute > 30 ? 1 : 0.5));
+        jamBookingSlider.min = minSliderValue;
+        jamBookingSlider.value = Math.max(jamBookingSlider.value, minSliderValue);
+        
+        // Update manual input juga
+        const minTimeStr = new Date(now.getTime() + (2 * 60 * 60 * 1000)).toTimeString().substring(0, 5);
+        jamBookingManual.min = minTimeStr;
+        
+        // Update initial value jika perlu
+        if (jamBookingManual.value < minTimeStr) {
+            jamBookingManual.value = minTimeStr;
+            jamBookingSlider.value = minSliderValue;
+        }
+    }
+    
+    // Event listeners
+    jamBookingManual.addEventListener('change', validateTime);
+    jamBookingSlider.addEventListener('input', function() {
+        validateTime();
+    });
+    
+    // Validasi saat form submit
+    bookingForm.addEventListener('submit', function(e) {
+        if (!validateTime()) {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    // Initial validation
+    validateTime();
 }
