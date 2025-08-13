@@ -54,9 +54,5 @@ class ProfileController extends Controller
         return redirect()->route('profile.show')->with('success', 'Profil berhasil diperbarui!');
     }
 
-    public function riwayat()
-    {
-        $riwayatBookings = auth()->user()->bookings()->with(['layanan', 'kucings'])->latest()->get();
-        return view('customer.riwayat', compact('riwayatBookings'));
-    }
+  
 }

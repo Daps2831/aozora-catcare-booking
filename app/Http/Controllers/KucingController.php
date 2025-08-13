@@ -42,7 +42,7 @@ class KucingController extends Controller
         Kucing::create($validatedData);
 
         return redirect()->route('kucing.register')->with('success', 'Data kucing berhasil disimpan!');
-    }
+    } 
 
      // Method untuk menampilkan halaman edit
     public function edit(Kucing $kucing)

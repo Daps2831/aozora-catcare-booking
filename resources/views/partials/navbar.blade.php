@@ -42,7 +42,7 @@
                         </a>
                         <a href="{{ route('kucing.register') }}" class="dropdown-item">
                             <i class="fas fa-cat"></i>
-                            Kucing Saya
+                            Daftarkan Kucing
                         </a>
                     @endif
                     

@@ -159,24 +159,6 @@
                     </div>
                 @endif
 
-                {{-- Menu Admin khusus untuk admin --}}
-                @if(Auth::user()->role === 'admin')
-                    <div class="menu-section">
-                        <h4 class="section-title">Panel Admin</h4>
-                        <a href="{{ route('admin.bookings') }}" class="profile-option">
-                            <i class="fas fa-calendar-check"></i>
-                            Kelola Booking
-                        </a>
-                        <a href="{{ route('admin.users') }}" class="profile-option">
-                            <i class="fas fa-users"></i>
-                            Kelola User
-                        </a>
-                        <a href="{{ route('admin.reports') }}" class="profile-option">
-                            <i class="fas fa-chart-bar"></i>
-                            Laporan
-                        </a>
-                    </div>
-                @endif
 
                 {{-- Logout Section --}}
                 <div class="menu-section">

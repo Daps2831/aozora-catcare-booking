@@ -58,5 +58,4 @@ class ReportController extends Controller
         ));
     }
 
-    // Untuk export, bisa tambahkan method exportExcel/exportPDF sesuai kebutuhan
 }
