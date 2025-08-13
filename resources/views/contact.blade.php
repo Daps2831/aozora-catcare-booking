@@ -8,7 +8,7 @@
             <h2>Kontak Kami</h2>
             <div class="contact-item">
                 <img src="{{ asset('images/email-icon.png') }}" alt="Email Icon">
-                <p>Email: <a href="mailto:hello@aozoracatcare.com">hello@aozoracatcare.com</a></p>
+                <p>Email: <a href="mailto:aozoracare6@gmail.com">aozoracare6@gmail.com</a></p>
             </div>
             <div class="contact-item">
                 <img src="{{ asset('images/phone-icon.png') }}" alt="Phone Icon">
@@ -16,8 +16,8 @@
             </div>
             <div class="contact-item">
                 <img src="{{ asset('images/location-icon.png') }}" alt="Location Icon">
-                <p>Kantor: 123 Sample St, Sydney NSW 2000 AU .</p>
-                <a href="#" class="get-directions">Dapatkan Petunjuk</a>
+                <p>Nantikan lokasi kantornya .</p>
+                <a href="#" class="get-directions"></a>
             </div>
         </div>
     </section>

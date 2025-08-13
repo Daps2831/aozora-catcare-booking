@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initUserDropdown();
     initTotalHargaBooking();
     initBookingTimeValidation();
-    initCatSlider();
+    initCatVerticalScroll();
 });
 
 /**
@@ -438,30 +438,73 @@ function initAddress() {
 }
 
 //fungsi jam
+// REPLACE fungsi initHours() dengan yang sudah disederhanakan:
 function initHours() {
-    const slider = document.getElementById("jamBookingSlider");
-    const manual = document.getElementById("jamBookingManual");
-    const label = document.getElementById("jamBookingLabel");
+    const slider = document.getElementById('jamBookingSlider');
+    const manualInput = document.getElementById('jamBookingManual');
+    const label = document.getElementById('jamBookingLabel');
 
-    // Pastikan semua elemen ada sebelum lanjut
-    if (!slider || !manual || !label) return;
+    if (!slider || !manualInput || !label) return;
 
-    function sliderToTime(val) {
-        const hour = Math.floor(val);
-        const minute = val % 1 === 0.5 ? "30" : "00";
-        return `${hour.toString().padStart(2, "0")}:${minute}`;
+    // SIMPLIFIED: Fungsi konversi yang lebih sederhana dan akurat
+    function decimalToTime(decimal) {
+        const totalMinutes = Math.round(decimal * 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        
+        return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
     }
 
-    slider.addEventListener("input", function () {
-        const jam = sliderToTime(slider.value);
-        manual.value = jam;
-        label.textContent = "Jam dipilih: " + jam;
-    });
+    function timeToDecimal(timeString) {
+        if (!timeString || !timeString.includes(':')) return 8.0;
+        
+        const [hours, minutes] = timeString.split(':').map(Number);
+        if (isNaN(hours) || isNaN(minutes)) return 8.0;
+        
+        return hours + (minutes / 60);
+    }
 
-    manual.addEventListener("input", function () {
-        label.textContent = "Jam dipilih: " + manual.value;
-        const [h, m] = manual.value.split(":");
-        slider.value = parseInt(h) + (m === "30" ? 0.5 : 0);
+    function updateFromSlider() {
+        const value = parseFloat(slider.value);
+        const timeString = decimalToTime(value);
+        
+        manualInput.value = timeString;
+        label.textContent = `Jam dipilih: ${timeString}`;
+        
+        // Trigger validation events
+        manualInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function updateFromManual() {
+        const timeValue = manualInput.value;
+        if (timeValue && timeValue.includes(':')) {
+            const decimal = timeToDecimal(timeValue);
+            
+            // Clamp to slider range
+            const clampedDecimal = Math.max(8, Math.min(18.5, decimal));
+            
+            slider.value = clampedDecimal;
+            label.textContent = `Jam dipilih: ${timeValue}`;
+        }
+    }
+
+    // Event listeners
+    slider.addEventListener('input', updateFromSlider);
+    slider.addEventListener('change', updateFromSlider);
+    
+    manualInput.addEventListener('change', updateFromManual);
+    manualInput.addEventListener('blur', updateFromManual);
+
+    // Initial setup
+    const initialTime = manualInput.value || '08:00';
+    manualInput.value = initialTime;
+    slider.value = timeToDecimal(initialTime);
+    label.textContent = `Jam dipilih: ${initialTime}`;
+    
+    console.log('Hours initialized:', { 
+        initialTime, 
+        sliderValue: slider.value,
+        inputValue: manualInput.value 
     });
 }
 
@@ -827,6 +870,7 @@ function initTotalHargaBooking() {
 
 // Tambahkan fungsi ini di bagian atas setelah initTotalHargaBooking()
 function initBookingTimeValidation() {
+    
     const jamBookingSlider = document.getElementById('jamBookingSlider');
     const jamBookingManual = document.getElementById('jamBookingManual');
     const jamBookingLabel = document.getElementById('jamBookingLabel');
@@ -834,7 +878,6 @@ function initBookingTimeValidation() {
     
     if (!jamBookingSlider || !jamBookingManual) return;
 
-    // Get current date and time
     const now = new Date();
     const selectedDate = document.querySelector('input[name="tanggalBooking"]')?.value;
     
@@ -843,31 +886,56 @@ function initBookingTimeValidation() {
     const isToday = selectedDate === now.toISOString().split('T')[0];
     
     function validateTime() {
-        const selectedTime = jamBookingManual.value;
-        if (!selectedTime) return true;
+        clearTimeError(); // Clear error first
         
-        // Jika booking untuk hari ini
+        const selectedTime = jamBookingManual.value;
+        
+        // BASIC: Check if time is filled
+        if (!selectedTime) {
+            showTimeError('Silakan pilih jam booking');
+            return false;
+        }
+
+        // BASIC: Check format
+        if (!/^\d{1,2}:\d{2}$/.test(selectedTime)) {
+            showTimeError('Format jam tidak valid');
+            return false;
+        }
+        
+        const [hours, minutes] = selectedTime.split(':').map(Number);
+        
+        // BASIC: Check valid numbers
+        if (isNaN(hours) || isNaN(minutes)) {
+            showTimeError('Jam tidak valid');
+            return false;
+        }
+        
+        // BASIC: Check operational hours (08:00 - 18:30)
+        const timeInMinutes = hours * 60 + minutes;
+        const openTime = 8 * 60; // 08:00
+        const closeTime = 18 * 60 + 30; // 18:30
+        
+        if (timeInMinutes < openTime || timeInMinutes > closeTime) {
+            showTimeError('Jam operasional: 08:00 - 18:30');
+            return false;
+        }
+        
+        // CONDITIONAL: Check for today only
         if (isToday) {
-            const [hours, minutes] = selectedTime.split(':').map(Number);
             const selectedDateTime = new Date();
             selectedDateTime.setHours(hours, minutes, 0, 0);
             
-            // Minimal 2 jam dari sekarang
             const minimumTime = new Date(now.getTime() + (2 * 60 * 60 * 1000));
-            
-            if (selectedDateTime <= now) {
-                showTimeError('Tidak dapat booking pada waktu yang sudah lewat!');
-                return false;
-            }
             
             if (selectedDateTime < minimumTime) {
                 const minTimeStr = minimumTime.toTimeString().substring(0, 5);
-                showTimeError(`Booking minimal 2 jam dari sekarang. Waktu minimal: ${minTimeStr}`);
+                showTimeError(`Booking minimal 2 jam dari sekarang (minimal: ${minTimeStr})`);
                 return false;
             }
         }
         
-        clearTimeError();
+        // SUCCESS: Enable submit
+        enableSubmit();
         return true;
     }
     
@@ -876,24 +944,30 @@ function initBookingTimeValidation() {
         if (!errorDiv) {
             errorDiv = document.createElement('div');
             errorDiv.id = 'time-error';
-            errorDiv.className = 'alert alert-danger';
-            errorDiv.style.marginTop = '10px';
-            errorDiv.style.padding = '10px';
-            errorDiv.style.backgroundColor = '#f8d7da';
-            errorDiv.style.color = '#721c24';
-            errorDiv.style.border = '1px solid #f5c6cb';
-            errorDiv.style.borderRadius = '5px';
-            jamBookingManual.parentNode.appendChild(errorDiv);
+            errorDiv.style.cssText = `
+                margin-top: 8px;
+                padding: 8px 12px;
+                background: #fee;
+                color: #c33;
+                border: 1px solid #fcc;
+                border-radius: 5px;
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            `;
+            
+            const timeContainer = jamBookingManual.closest('.time-input-container');
+            if (timeContainer) {
+                timeContainer.appendChild(errorDiv);
+            }
         }
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
         
-        // Disable submit button
-        const submitBtn = bookingForm.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.6';
-        }
+        errorDiv.innerHTML = `⚠ ${message}`;
+        errorDiv.style.display = 'flex';
+        
+        // Disable submit
+        disableSubmit();
     }
     
     function clearTimeError() {
@@ -901,150 +975,408 @@ function initBookingTimeValidation() {
         if (errorDiv) {
             errorDiv.style.display = 'none';
         }
-        
-        // Enable submit button
+    }
+    
+    function disableSubmit() {
+        const submitBtn = bookingForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        }
+    }
+    
+    function enableSubmit() {
         const submitBtn = bookingForm.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
         }
     }
     
-    // Update jam operasional untuk hari ini
-    if (isToday) {
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        
-        // Set minimum time untuk slider (2 jam dari sekarang)
-        const minSliderValue = Math.max(8, currentHour + 2 + (currentMinute > 30 ? 1 : 0.5));
-        jamBookingSlider.min = minSliderValue;
-        jamBookingSlider.value = Math.max(jamBookingSlider.value, minSliderValue);
-        
-        // Update manual input juga
-        const minTimeStr = new Date(now.getTime() + (2 * 60 * 60 * 1000)).toTimeString().substring(0, 5);
-        jamBookingManual.min = minTimeStr;
-        
-        // Update initial value jika perlu
-        if (jamBookingManual.value < minTimeStr) {
-            jamBookingManual.value = minTimeStr;
-            jamBookingSlider.value = minSliderValue;
-        }
-    }
+    // Event listeners dengan debounce
+    let validationTimeout;
+    const debouncedValidate = () => {
+        clearTimeout(validationTimeout);
+        validationTimeout = setTimeout(validateTime, 150);
+    };
     
-    // Event listeners
     jamBookingManual.addEventListener('change', validateTime);
-    jamBookingSlider.addEventListener('input', function() {
-        validateTime();
-    });
-    
-    // Validasi saat form submit
-    bookingForm.addEventListener('submit', function(e) {
-        if (!validateTime()) {
-            e.preventDefault();
-            return false;
-        }
-    });
+    jamBookingManual.addEventListener('input', debouncedValidate);
+    jamBookingSlider.addEventListener('input', debouncedValidate);
+    jamBookingSlider.addEventListener('change', validateTime);
     
     // Initial validation
-    validateTime();
+    setTimeout(validateTime, 100);
+    
+    console.log('Time validation initialized for date:', selectedDate, 'isToday:', isToday);
 }
 
 
 // slider pada buat booking jika kucing lebih dari 5
-function initCatSlider() {
-    const slider = document.getElementById('cats-slider');
-    const prevBtn = document.getElementById('prev-cats');
-    const nextBtn = document.getElementById('next-cats');
-    const indicatorsContainer = document.getElementById('slider-indicators');
+// REPLACE FUNGSI initCatVerticalScroll() DENGAN INI:
+function initCatVerticalScroll() {
+    const scrollContainer = document.getElementById('cats-scroll-container');
+    const scrollUpBtn = document.getElementById('scroll-up');
+    const scrollDownBtn = document.getElementById('scroll-down');
+    const scrollIndicator = document.getElementById('scroll-indicator');
     
-    if (!slider) return; // Jika tidak ada slider, keluar
+    if (!scrollContainer) return;
     
-    const slides = slider.querySelectorAll('.cat-slide');
-    const slidesPerView = 2; // Tampilkan 2 kucing per slide
-    const totalSlides = Math.ceil(slides.length / slidesPerView);
-    let currentSlide = 0;
+    // PERBAIKAN: Pastikan wrapper dibuat terlebih dahulu
+    let itemsWrapper = scrollContainer.querySelector('.cats-items-wrapper');
+    if (!itemsWrapper) {
+        itemsWrapper = createItemsWrapper();
+    }
     
-    // Generate indicators
-    if (indicatorsContainer) {
-        for (let i = 0; i < totalSlides; i++) {
-            const indicator = document.createElement('button');
-            indicator.type = 'button';
-            indicator.className = `indicator ${i === 0 ? 'active' : ''}`;
-            indicator.setAttribute('data-slide', i);
-            indicatorsContainer.appendChild(indicator);
+    const catItems = itemsWrapper.querySelectorAll('.cat-item');
+    const totalItems = catItems.length;
+    
+    console.log(`Found ${totalItems} cat items`);
+    
+    if (totalItems <= 4) {
+        // Jika kucing <= 4, tidak perlu scroll controls
+        if (scrollUpBtn) scrollUpBtn.style.display = 'none';
+        if (scrollDownBtn) scrollDownBtn.style.display = 'none';
+        if (scrollIndicator && scrollIndicator.parentElement) {
+            scrollIndicator.parentElement.style.display = 'none';
+        }
+        
+        scrollContainer.style.height = 'auto';
+        scrollContainer.style.maxHeight = 'none';
+        scrollContainer.style.overflow = 'visible';
+        return;
+    }
+    
+    let currentScroll = 0;
+    let maxScroll = 0;
+    let containerHeight = 540; // Default: 4 items visible
+    
+    // PERBAIKAN: Kalkulasi tinggi yang lebih akurat dengan mempertimbangkan service selection
+    function calculateDimensions() {
+        const visibleItems = window.innerWidth <= 768 ? 3 : 4;
+        
+        // CRITICAL: Hitung tinggi total dari semua items secara real-time
+        let totalContentHeight = 0;
+        const itemHeights = [];
+        
+        catItems.forEach((item, index) => {
+            // Force refresh layout
+            item.style.display = 'flex';
+            item.style.flexDirection = 'column';
+            
+            // Ukur tinggi real item termasuk service selection
+            const itemRect = item.getBoundingClientRect();
+            const itemHeight = item.offsetHeight || 135;
+            const marginBottom = parseInt(window.getComputedStyle(item).marginBottom) || 15;
+            const totalItemHeight = itemHeight + marginBottom;
+            
+            itemHeights.push(totalItemHeight);
+            totalContentHeight += totalItemHeight;
+            
+            console.log(`Item ${index + 1}: height=${itemHeight}, margin=${marginBottom}, total=${totalItemHeight}`);
+        });
+        
+        // Tinggi container berdasarkan item yang terlihat
+        const averageItemHeight = Math.max(135, totalContentHeight / totalItems);
+        containerHeight = visibleItems * averageItemHeight;
+        
+        // CRITICAL: maxScroll harus berdasarkan tinggi konten AKTUAL dikurangi tinggi container
+        maxScroll = Math.max(0, totalContentHeight - containerHeight);
+        
+        console.log(`Calculated: totalContent=${totalContentHeight}, container=${containerHeight}, maxScroll=${maxScroll}`);
+        
+        // Set container properties
+        scrollContainer.style.height = `${containerHeight}px`;
+        scrollContainer.style.overflowY = 'hidden';
+        scrollContainer.style.position = 'relative';
+        
+        // Adjust current scroll if needed
+        if (currentScroll > maxScroll) {
+            currentScroll = maxScroll;
+        }
+        
+        updateScroll();
+    }
+    
+    // PERBAIKAN: Fungsi untuk mendapatkan tinggi scroll per step yang dinamis
+    function getScrollStep() {
+        // Scroll berdasarkan rata-rata tinggi item, bukan fixed
+        const totalVisibleHeight = containerHeight;
+        return Math.max(100, totalVisibleHeight / 4); // Scroll 1/4 dari container height
+    }
+    
+    function updateScroll() {
+        if (!itemsWrapper) return;
+        
+        // CLAMP current scroll to valid bounds
+        currentScroll = Math.max(0, Math.min(maxScroll, currentScroll));
+        
+        itemsWrapper.style.transform = `translateY(-${currentScroll}px)`;
+        
+        // Update buttons state
+        if (scrollUpBtn) {
+            scrollUpBtn.disabled = currentScroll <= 0;
+            scrollUpBtn.style.opacity = currentScroll <= 0 ? '0.5' : '1';
+        }
+        if (scrollDownBtn) {
+            scrollDownBtn.disabled = currentScroll >= maxScroll;
+            scrollDownBtn.style.opacity = currentScroll >= maxScroll ? '0.5' : '1';
+        }
+        
+        // Update indicator
+        if (scrollIndicator && maxScroll > 0) {
+            const percentage = Math.min(100, (currentScroll / maxScroll) * 100);
+            const trackHeight = 60;
+            const indicatorHeight = 20;
+            const maxMove = trackHeight - indicatorHeight;
+            const moveDistance = (percentage / 100) * maxMove;
+            scrollIndicator.style.transform = `translateY(${moveDistance}px)`;
+        }
+        
+        console.log(`Scroll updated: current=${currentScroll}, max=${maxScroll}, step=${getScrollStep()}`);
+    }
+    
+    // PERBAIKAN: Scroll functions dengan step dinamis
+    function scrollUp() {
+        const step = getScrollStep();
+        currentScroll = Math.max(0, currentScroll - step);
+        updateScroll();
+    }
+    
+    function scrollDown() {
+        const step = getScrollStep();
+        currentScroll = Math.min(maxScroll, currentScroll + step);
+        updateScroll();
+    }
+    
+    // Event listeners
+    if (scrollUpBtn) {
+        scrollUpBtn.onclick = (e) => {
+            e.preventDefault();
+            scrollUp();
+        };
+    }
+    
+    if (scrollDownBtn) {
+        scrollDownBtn.onclick = (e) => {
+            e.preventDefault();
+            scrollDown();
+        };
+    }
+    
+    // Mouse wheel scroll
+    scrollContainer.onwheel = (e) => {
+        e.preventDefault();
+        
+        const scrollStep = getScrollStep() / 3; // Smaller steps for wheel
+        
+        if (e.deltaY > 0) {
+            currentScroll = Math.min(maxScroll, currentScroll + scrollStep);
+        } else {
+            currentScroll = Math.max(0, currentScroll - scrollStep);
+        }
+        updateScroll();
+    };
+    
+    // Touch support - IMPROVED
+    let startY = 0;
+    let isScrolling = false;
+    let lastTouchY = 0;
+    
+    scrollContainer.ontouchstart = (e) => {
+        startY = e.touches[0].clientY;
+        lastTouchY = startY;
+        isScrolling = false;
+    };
+    
+    scrollContainer.ontouchmove = (e) => {
+        const currentY = e.touches[0].clientY;
+        const deltaY = Math.abs(startY - currentY);
+        
+        if (deltaY > 5) {
+            isScrolling = true;
+            e.preventDefault();
+            
+            // Real-time scroll during touch move
+            const touchDelta = lastTouchY - currentY;
+            lastTouchY = currentY;
+            
+            currentScroll = Math.max(0, Math.min(maxScroll, currentScroll + touchDelta));
+            updateScroll();
+        }
+    };
+    
+    scrollContainer.ontouchend = (e) => {
+        if (!isScrolling) return;
+        // Final adjustment - snap to nearest logical position
+        updateScroll();
+    };
+    
+    // Keyboard navigation
+    scrollContainer.onkeydown = (e) => {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            scrollUp();
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            scrollDown();
+        }
+    };
+    
+    scrollContainer.setAttribute('tabindex', '0');
+    
+    // CRITICAL: Observer untuk service selection changes
+    function observeItemChanges() {
+        const checkboxes = itemsWrapper.querySelectorAll('.kucing-checkbox');
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                // Delay untuk memastikan DOM sudah terupdate
+                setTimeout(() => {
+                    console.log('Checkbox changed, recalculating...');
+                    calculateDimensions();
+                }, 350); // Increased delay
+            });
+        });
+        
+        // Observer untuk service select
+        const selects = itemsWrapper.querySelectorAll('.service-select');
+        selects.forEach(select => {
+            select.addEventListener('change', () => {
+                setTimeout(() => {
+                    console.log('Service select changed, recalculating...');
+                    calculateDimensions();
+                }, 100);
+            });
+        });
+        
+        // TAMBAHAN: MutationObserver untuk perubahan style
+        const observer = new MutationObserver(() => {
+            console.log('DOM mutation detected, recalculating...');
+            setTimeout(calculateDimensions, 200);
+        });
+        
+        observer.observe(itemsWrapper, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+    }
+    
+    // TAMBAHAN: Function to ensure last item is fully visible
+    function ensureLastItemVisible() {
+        if (totalItems === 0) return;
+        
+        setTimeout(() => {
+            const lastItem = catItems[totalItems - 1];
+            if (!lastItem) return;
+            
+            const lastItemRect = lastItem.getBoundingClientRect();
+            const containerRect = scrollContainer.getBoundingClientRect();
+            const lastItemBottom = lastItemRect.bottom;
+            const containerBottom = containerRect.bottom;
+            
+            // If last item is cut off
+            if (lastItemBottom > containerBottom) {
+                const extraScroll = lastItemBottom - containerBottom + 20; // 20px buffer
+                maxScroll += extraScroll;
+                console.log(`Added extra scroll for last item: ${extraScroll}px`);
+                updateScroll();
+            }
+        }, 500);
+    }
+    
+    // Buat wrapper
+    function createItemsWrapper() {
+        console.log('Creating items wrapper...');
+        
+        let existingWrapper = scrollContainer.querySelector('.cats-items-wrapper');
+        if (existingWrapper) {
+            return existingWrapper;
+        }
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'cats-items-wrapper';
+        wrapper.style.transition = 'transform 0.3s ease';
+        wrapper.style.width = '100%';
+        wrapper.style.position = 'relative';
+        
+        // Move all cat items to wrapper
+        const allCatItems = scrollContainer.querySelectorAll('.cat-item');
+        allCatItems.forEach(item => {
+            wrapper.appendChild(item);
+        });
+        
+        scrollContainer.appendChild(wrapper);
+        return wrapper;
+    }
+    
+    // IMPROVED: Responsive resize handler
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            console.log('Window resized, recalculating dimensions...');
+            calculateDimensions();
+            ensureLastItemVisible();
+        }, 200);
+    });
+    
+    // IMPROVED: Auto-scroll to selected cat
+    function scrollToSelectedCat() {
+        const selectedCat = itemsWrapper.querySelector('.cat-item input:checked');
+        if (selectedCat) {
+            const catItem = selectedCat.closest('.cat-item');
+            const itemRect = catItem.getBoundingClientRect();
+            const containerRect = scrollContainer.getBoundingClientRect();
+            
+            // Check if item is fully visible
+            const itemTop = itemRect.top;
+            const itemBottom = itemRect.bottom;
+            const containerTop = containerRect.top;
+            const containerBottom = containerRect.bottom;
+            
+            if (itemBottom > containerBottom || itemTop < containerTop) {
+                // Calculate scroll needed to center the item
+                const itemOffsetTop = catItem.offsetTop;
+                const centerScroll = itemOffsetTop - (containerHeight / 2) + (itemRect.height / 2);
+                currentScroll = Math.max(0, Math.min(maxScroll, centerScroll));
+                updateScroll();
+            }
         }
     }
     
-    // Update slider position
-    function updateSlider() {
-        const translateX = -(currentSlide * 100);
-        slider.style.transform = `translateX(${translateX}%)`;
-        
-        // Update indicators
-        document.querySelectorAll('.indicator').forEach((indicator, index) => {
-            indicator.classList.toggle('active', index === currentSlide);
-        });
-        
-        // Update button states
-        if (prevBtn) prevBtn.disabled = currentSlide === 0;
-        if (nextBtn) nextBtn.disabled = currentSlide === totalSlides - 1;
-    }
-    
-    // Previous button
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateSlider();
-            }
-        });
-    }
-    
-    // Next button
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-                updateSlider();
-            }
-        });
-    }
-    
-    // Indicator clicks
-    if (indicatorsContainer) {
-        indicatorsContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('indicator')) {
-                currentSlide = parseInt(e.target.getAttribute('data-slide'));
-                updateSlider();
-            }
-        });
-    }
-    
-    // Touch/swipe support
-    let startX = 0;
-    let endX = 0;
-    
-    slider.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
-    });
-    
-    slider.addEventListener('touchend', (e) => {
-        endX = e.changedTouches[0].clientX;
-        const deltaX = startX - endX;
-        
-        if (Math.abs(deltaX) > 50) { // Minimum swipe distance
-            if (deltaX > 0 && currentSlide < totalSlides - 1) {
-                // Swipe left (next)
-                currentSlide++;
-                updateSlider();
-            } else if (deltaX < 0 && currentSlide > 0) {
-                // Swipe right (prev)
-                currentSlide--;
-                updateSlider();
-            }
+    // Listen selection changes with improved timing
+    catItems.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    setTimeout(() => {
+                        calculateDimensions();
+                        setTimeout(scrollToSelectedCat, 100);
+                    }, 400);
+                }
+            });
         }
     });
     
-    // Initial update
-    updateSlider();
+    // Initial setup dengan sequence yang tepat
+    setTimeout(() => {
+        calculateDimensions();
+        observeItemChanges();
+        setTimeout(() => {
+            ensureLastItemVisible();
+        }, 200);
+    }, 100);
+    
+    // TAMBAHAN: Periodic recalculation untuk memastikan accuracy
+    setInterval(() => {
+        if (scrollContainer.offsetParent !== null) { // Only if visible
+            calculateDimensions();
+        }
+    }, 2000);
 }

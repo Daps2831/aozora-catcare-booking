@@ -52,20 +52,35 @@
                     <textarea id="riwayat_kesehatan" name="riwayat_kesehatan">{{ old('riwayat_kesehatan', $kucing->riwayat_kesehatan) }}</textarea>
                 </div>
 
-                <div class="form-group" style="display:flex; gap:16px;">
-                    <button type="submit" class="cta-btn-diteks btn-form-kucing">Simpan Perubahan</button>
-                    <a href="{{ route('user.dashboard') }}" class="btn-back btn-form-kucing">Batal</a>
+                {{-- Action Buttons Container --}}
+                <div class="form-actions">
+                    <div class="primary-actions">
+                        <button type="submit" class="btn-form-kucing btn-primary">
+                            <i class="fas fa-save"></i>
+                            Simpan Perubahan
+                        </button>
+                        <a href="{{ route('user.dashboard') }}" class="btn-form-kucing btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Batal
+                        </a>
+                    </div>
                 </div>
             </form>
 
-            {{-- Tombol Hapus --}}
-            <form action="{{ route('kucing.destroy', $kucing->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data kucing ini?')" style="margin-top:10px;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-hapus" style="background:#e11d48;color:#fff;border:none;border-radius:6px;padding:0.6rem 1.5rem;font-size:1rem;font-weight:600;cursor:pointer;">
-                    Hapus
-                </button>
-            </form>
+            {{-- Delete Action - Terpisah --}}
+            <div class="delete-section">
+                <div class="delete-warning">
+                    <p><i class="fas fa-exclamation-triangle"></i> Tindakan ini tidak dapat dibatalkan</p>
+                </div>
+                <form action="{{ route('kucing.destroy', $kucing->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data kucing {{ $kucing->nama_kucing }}? Tindakan ini tidak dapat dibatalkan.')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-form-kucing btn-danger">
+                        <i class="fas fa-trash-alt"></i>
+                        Hapus Data Kucing
+                    </button>
+                </form>
+            </div>
         </div>
     </section>
 @endsection

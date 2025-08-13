@@ -19,14 +19,14 @@
     @yield('css')
     
   
-    {{-- NAVBAR FIXED CSS --}}
+    {{-- NAVBAR FIXED CSS + FOOTER CSS --}}
     <style>
         .navbar-wrapper {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
             right: 0 !important;
-            z-index: 1000 !important; /* Lebih rendah dari side menu */
+            z-index: 1000 !important;
             background: white !important;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
         }
@@ -41,16 +41,73 @@
         /* Body padding responsif */
         body {
             padding-top: 90px !important;
+            margin: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            min-height: 100vh !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
         
+        /* Main content flex grow */
+        main {
+            flex: 1 !important;
+            width: 100% !important;
+            margin: 0  !important; 
+            padding: 0 !important;
+            max-width: none !important; /* TAMBAHKAN untuk override app.css */
+        }
+        
+        /* FOOTER STYLES */
+        .main-footer {
+            width: 100% !important;
+            background: linear-gradient(135deg, #000000ff 0%, #000000ff 100%) !important;
+            color: white !important;
+            padding: 30px 0 !important;
+            margin: 0 !important;
+            margin-top: auto !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            z-index: 1 !important;
+        }
+        
+        .footer-content {
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            padding: 0 20px !important;
+            text-align: center !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        .footer-text {
+            margin: 0 !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
+            color: white !important;
+            line-height: 1.5 !important;
+        }
+        
+        /* Footer responsive */
         @media (max-width: 768px) {
             body {
                 padding-top: 60px !important;
             }
             
-            /* Menu button visible di mobile */
             .menu-btn {
                 display: flex !important;
+            }
+            
+            .main-footer {
+                padding: 25px 0 !important;
+            }
+            
+            .footer-content {
+                padding: 0 15px !important;
+            }
+            
+            .footer-text {
+                font-size: 14px !important;
             }
         }
         
@@ -58,9 +115,34 @@
             body {
                 padding-top: 50px !important;
             }
+            
+            .main-footer {
+                padding: 20px 0 !important;
+            }
+            
+            .footer-content {
+                padding: 0 10px !important;
+            }
+            
+            .footer-text {
+                font-size: 13px !important;
+                line-height: 1.4 !important;
+            }
         }
         
-        /* Pastikan side menu tidak terhalang */
+        /* Pastikan tidak ada overflow horizontal */
+        html, body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        /* Container untuk memastikan full width */
+        * {
+            box-sizing: border-box !important;
+        }
+        
+        /* Side menu tetap di atas */
         .side-menu-overlay {
             z-index: 2000 !important;
         }
@@ -68,7 +150,10 @@
         .side-menu {
             z-index: 2001 !important;
         }
+
+      
     </style>
+
 </head>
 <body>
     {{-- NAVBAR - Fixed Position --}}

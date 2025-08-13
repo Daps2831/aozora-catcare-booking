@@ -41,7 +41,7 @@
             @csrf
             <input type="hidden" name="tanggalBooking" value="{{ $selectedDate }}">
             
-            <!-- Time Selection Section -->
+            <!-- Time Selection Section - PERBAIKAN -->
             <div class="form-section">
                 <div class="section-header">
                     <h3><i class="fas fa-clock"></i> Pilih Waktu Booking</h3>
@@ -51,12 +51,15 @@
                         <div class="time-inputs">
                             <div class="slider-container">
                                 <label for="jamBookingSlider">Geser untuk memilih jam:</label>
-                                <input type="range" id="jamBookingSlider" min="8" max="18" step="0.5" value="8">
+                                <!-- PERBAIKAN: Step yang lebih halus untuk precision tinggi -->
+                                <input type="range" id="jamBookingSlider" 
+                                    min="8" max="18.5" step="0.01" value="8.0">
                             </div>
                             <div class="time-input-container">
                                 <label for="jamBookingManual">Atau ketik manual:</label>
+                                <!-- PERBAIKAN: Hilangkan semua constraint yang membingungkan -->
                                 <input type="time" id="jamBookingManual" name="jamBooking" 
-                                       min="08:00" max="18:30" step="600" value="08:00" required>
+                                    value="08:00" required>
                             </div>
                         </div>
                         <div class="time-display">
@@ -73,7 +76,7 @@
                         @if(\Carbon\Carbon::parse($selectedDate)->isToday())
                             <div class="info-item warning">
                                 <i class="fas fa-info-circle"></i>
-                                <span>Booking minimal 2 jam dari sekarang ({{ \Carbon\Carbon::now()->addHours(2)->format('H:i') }})</span>
+                                <span>Booking minimal 2 jam dari sekarang</span>
                             </div>
                         @endif
                     </div>
@@ -129,59 +132,79 @@
                 </div>
                 <div class="form-content">
                     @if($kucings->count() > 5)
-                        <!-- Slider Container untuk lebih dari 5 kucing -->
-                        <div class="cats-slider-container">
-                            <div class="cats-slider" id="cats-slider">
+                        <!-- Vertical Scroll Container untuk lebih dari 5 kucing -->
+                        <div class="cats-scroll-wrapper">
+                            <div class="scroll-header">
+                                <div class="scroll-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>{{ $kucings->count() }} kucing tersedia. Gunakan tombol atau scroll untuk melihat semua.</span>
+                                </div>
+                                <div class="scroll-controls">
+                                    <button type="button" class="scroll-btn" id="scroll-up">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                    <div class="scroll-indicator-track">
+                                        <div class="scroll-indicator" id="scroll-indicator"></div>
+                                    </div>
+                                    <button type="button" class="scroll-btn" id="scroll-down">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="cats-scroll-container" id="cats-scroll-container">
                                 @foreach($kucings as $kucing)
-                                    <div class="cat-slide">
-                                        <div class="cat-item" data-cat-id="{{ $kucing->id }}">
-                                            <div class="cat-selection">
-                                                <input type="checkbox" name="kucing_ids[]" value="{{ $kucing->id }}"
-                                                    id="kucing_{{ $kucing->id }}" class="kucing-checkbox"
-                                                    {{ in_array($kucing->id, old('kucing_ids', [])) ? 'checked' : '' }}>
-                                                <label for="kucing_{{ $kucing->id }}" class="cat-card">
-                                                    <div class="cat-image">
-                                                        <img src="{{ $kucing->gambar ? asset('storage/' . $kucing->gambar) : asset('images/no-image-available.png') }}"
-                                                            alt="Foto {{ $kucing->nama_kucing }}">
+                                    <div class="cat-item" data-cat-id="{{ $kucing->id }}">
+                                        <div class="cat-selection">
+                                            <input type="checkbox" name="kucing_ids[]" value="{{ $kucing->id }}"
+                                                id="kucing_{{ $kucing->id }}" class="kucing-checkbox"
+                                                {{ in_array($kucing->id, old('kucing_ids', [])) ? 'checked' : '' }}>
+                                            <label for="kucing_{{ $kucing->id }}" class="cat-card">
+                                                <div class="cat-image">
+                                                    <img src="{{ $kucing->gambar ? asset('storage/' . $kucing->gambar) : asset('images/no-image-available.png') }}"
+                                                        alt="Foto {{ $kucing->nama_kucing }}">
+                                                </div>
+                                                <div class="cat-info">
+                                                    <h4>{{ $kucing->nama_kucing }}</h4>
+                                                    <p>{{ $kucing->jenis }}</p>
+                                                    <div class="cat-details">
+                                                        <span><i class="fas fa-birthday-cake"></i> {{ $kucing->umur ?? 'N/A' }} tahun</span>
                                                     </div>
-                                                    <div class="cat-info">
-                                                        <h4>{{ $kucing->nama_kucing }}</h4>
-                                                        <p>{{ $kucing->jenis }}</p>
-                                                        <div class="cat-details">
-                                                            <span><i class="fas fa-birthday-cake"></i> {{ $kucing->umur ?? 'N/A' }} tahun</span>
-                                                        </div>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                            <div class="service-selection" id="layanan_container_{{ $kucing->id }}" 
-                                                style="{{ in_array($kucing->id, old('kucing_ids', [])) ? '' : 'display:none;' }}">
-                                                <label>Pilih Layanan:</label>
-                                                <select name="layanan_per_kucing[{{ $kucing->id }}]" class="service-select">
-                                                    <option value="">-- Pilih Layanan --</option>
-                                                    @foreach($layanans as $layanan)
-                                                        <option value="{{ $layanan->id }}" data-harga="{{ $layanan->harga }}"
-                                                                {{ old('layanan_per_kucing.' . $kucing->id) == $layanan->id ? 'selected' : '' }}>
-                                                            {{ $layanan->nama_layanan }} - Rp {{ number_format($layanan->harga, 0, ',', '.') }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="service-selection" id="layanan_container_{{ $kucing->id }}" 
+                                            style="{{ in_array($kucing->id, old('kucing_ids', [])) ? '' : 'display:none;' }}">
+                                            <label>Pilih Layanan:</label>
+                                            <select name="layanan_per_kucing[{{ $kucing->id }}]" class="service-select">
+                                                <option value="">-- Pilih Layanan --</option>
+                                                @foreach($layanans as $layanan)
+                                                    <option value="{{ $layanan->id }}" data-harga="{{ $layanan->harga }}"
+                                                            {{ old('layanan_per_kucing.' . $kucing->id) == $layanan->id ? 'selected' : '' }}>
+                                                        {{ $layanan->nama_layanan }} - Rp {{ number_format($layanan->harga, 0, ',', '.') }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
-                            <!-- Slider Navigation -->
-                            <div class="slider-navigation">
-                                <button type="button" class="slider-btn prev-btn" id="prev-cats">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <button type="button" class="slider-btn next-btn" id="next-cats">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
-                            <!-- Slider Indicators -->
-                            <div class="slider-indicators" id="slider-indicators">
-                                <!-- Will be generated by JavaScript -->
+                            
+                            <div class="scroll-footer">
+                                <div class="scroll-tips">
+                                    <div class="tip-item">
+                                        <i class="fas fa-mouse"></i>
+                                        <span>Scroll mouse wheel</span>
+                                    </div>
+                                    <div class="tip-item">
+                                        <i class="fas fa-hand-point-up"></i>
+                                        <span>Swipe up/down</span>
+                                    </div>
+                                    <div class="tip-item">
+                                        <i class="fas fa-keyboard"></i>
+                                        <span>Arrow keys</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @else
@@ -447,6 +470,20 @@
     font-size: 16px;
     background: #f8f9fa;
     transition: all 0.3s ease;
+    cursor: text; /* Better UX for manual input */
+}
+
+#jamBookingManual::-webkit-calendar-picker-indicator {
+    background-color: #667eea;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+/* Remove spinners on time input for cleaner look */
+#jamBookingManual::-webkit-outer-spin-button,
+#jamBookingManual::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 #jamBookingManual:focus {
@@ -1005,172 +1042,559 @@ input:invalid {
     100% { transform: rotate(360deg); }
 }
 
-/* Cat Slider Styles */
-.cats-slider-container {
-    position: relative;
-    overflow: hidden;
+/* =============================================== */
+/* VERTICAL SCROLL STYLES - REPLACE SLIDER STYLES */
+/* =============================================== */
+
+/* TAMBAHAN: Perbaikan untuk container overflow */
+.cats-scroll-wrapper {
+    border: 2px solid #e9ecef;
     border-radius: 15px;
-}
-
-.cats-slider {
-    display: flex;
-    transition: transform 0.3s ease;
-    width: calc(100% * var(--total-slides, 1));
-}
-
-.cat-slide {
-    flex: 0 0 50%; /* 2 kucing per slide */
-    padding: 0 10px;
-    box-sizing: border-box;
-}
-
-.cat-slide .cat-item {
-    margin-bottom: 0;
-}
-
-/* Slider Navigation */
-.slider-navigation {
-    position: absolute;
-    top: 50%;
+    background: white;
+    overflow: hidden;
     width: 100%;
+    max-width: 100%;
+}}
+
+.scroll-header {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0fe 100%);
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    pointer-events: none;
-    z-index: 10;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
-.slider-btn {
-    background: rgba(255, 255, 255, 0.9);
+.scroll-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #667eea;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.scroll-info i {
+    font-size: 16px;
+}
+
+.scroll-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.scroll-btn {
+    background: #667eea;
+    color: white;
     border: none;
     border-radius: 50%;
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
-    pointer-events: auto;
-    color: #667eea;
-    font-size: 18px;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
-.slider-btn:hover {
-    background: white;
+.scroll-btn:hover {
+    background: #5a67d8;
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.slider-btn:disabled {
-    opacity: 0.5;
+.scroll-btn:disabled {
+    background: #cbd5e0;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
-.slider-btn.prev-btn {
-    margin-left: -22px;
+.scroll-indicator-track {
+    width: 4px;
+    height: 60px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
 }
 
-.slider-btn.next-btn {
-    margin-right: -22px;
+.scroll-indicator {
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+    transition: transform 0.3s ease;
+    position: absolute;
+    top: 0;
 }
 
-/* Slider Indicators */
-.slider-indicators {
+/* Cats Scroll Container */
+.cats-scroll-container {
+    position: relative;
+    overflow: hidden !important;
+    scroll-behavior: smooth;
+    padding: 20px;
+    background: white;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: 0px solid transparent; /* Buffer space */
+}
+
+.cats-scroll-container:focus {
+    outline: 2px solid #667eea;
+    outline-offset: -2px;
+}
+
+/* Cat Items in Scroll */
+/* PERBAIKI: Cat Items styling untuk konsistensi height */
+.cats-scroll-container .cat-item {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    background: white;
+    overflow: visible; /* CHANGED: allow overflow untuk service selection */
     display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 20px;
-    padding: 15px 0;
+    flex-direction: column;
+    box-sizing: border-box;
+    position: relative;
 }
 
-.indicator {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: none;
-    background: #ddd;
+.cats-scroll-container .cat-item:last-child {
+    margin-bottom: 30px; /* UBAH: Tetap berikan margin untuk spacing yang konsisten */
+}
+
+.cats-scroll-container .cats-items-wrapper {
+    transition: transform 0.3s ease;
+    width: 100%;
+    position: relative;
+    min-height: 100%;
+    padding-bottom: 20px; /* Extra padding bottom */
+}
+
+.cats-scroll-container .cat-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+    transform: translateX(5px);
+}
+
+.cats-scroll-container .cat-item.selected {
+    border-color: #667eea;
+    background: #f8f9ff;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.15);
+}
+
+/* Enhanced Cat Card for Scroll */
+.cats-scroll-container .cat-card {
+    display: flex;
+    padding: 15px;
+    align-items: center;
     cursor: pointer;
+    transition: background 0.3s ease;
+    position: relative;
+}
+
+.cats-scroll-container .cat-card:hover {
+    background: #f8f9fa;
+}
+
+.cats-scroll-container .cat-selection {
+    position: relative;
+    flex: 1;
+    min-height: 70px; /* Base height for cat selection */
+    padding: 15px;
+}
+
+.cats-scroll-container .cat-selection input[type="checkbox"] {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 2;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.cats-scroll-container .cat-card {
+    padding-left: 45px;
+}
+
+.cats-scroll-container .cat-image {
+    flex-shrink: 0;
+    margin-right: 15px;
+}
+
+.cats-scroll-container .cat-image img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e9ecef;
+    transition: border-color 0.3s ease;
+}
+
+.cats-scroll-container .cat-item:hover .cat-image img {
+    border-color: #667eea;
+}
+
+.cats-scroll-container .cat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cats-scroll-container .cat-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cats-scroll-container .cat-info p {
+    margin: 0 0 6px 0;
+    color: #666;
+    font-size: 13px;
+}
+
+.cats-scroll-container .cat-details {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #888;
+    gap: 10px;
+}
+
+.cats-scroll-container .cat-details i {
+    margin-right: 3px;
+    color: #667eea;
+}
+
+/* Service Selection in Scroll */
+/* Service Selection Height Consistency */
+/* FIXED: Service selection dengan proper height */
+.cats-scroll-container .service-selection {
+    padding: 15px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+.cats-scroll-container .service-selection label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 13px;
+}
+
+.cats-scroll-container .service-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
     transition: all 0.3s ease;
 }
 
-.indicator.active {
-    background: #667eea;
-    transform: scale(1.2);
+.cats-scroll-container .service-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.indicator:hover {
-    background: #764ba2;
+/* Scroll Footer */
+.scroll-footer {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-top: 1px solid #e9ecef;
 }
 
-/* Responsive Slider */
+.scroll-tips {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.tip-item i {
+    color: #667eea;
+    font-size: 14px;
+}
+
+/* PERBAIKAN: Responsive yang lebih baik */
 @media (max-width: 768px) {
-    .cat-slide {
-        flex: 0 0 100%; /* 1 kucing per slide di mobile */
+    .scroll-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
     }
     
-    .slider-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
+    .scroll-controls {
+        justify-content: center;
     }
     
-    .slider-btn.prev-btn {
-        margin-left: -20px;
+    .cats-scroll-container {
+        padding: 15px;
+        border-bottom: 0px solid transparent;
+        /* HAPUS min-height fixed untuk mobile */
     }
     
-    .slider-btn.next-btn {
-        margin-right: -20px;
+    .cats-scroll-container .cat-item {
+        margin-bottom: 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    .cats-scroll-container .cat-card {
+        padding: 12px !important;
+        padding-left: 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        flex-direction: row !important; /* Tetap horizontal */
+    }
+    
+    .cats-scroll-container .cat-selection {
+        padding: 12px !important;
+    }
+    
+    .cats-scroll-container .cat-selection input[type="checkbox"] {
+        top: 12px !important;
+        left: 12px !important;
+        width: 16px !important;
+        height: 16px !important;
+    }
+    
+    .cats-scroll-container .cat-image {
+        flex-shrink: 0 !important;
+        margin-right: 12px !important;
+    }
+    
+    .cats-scroll-container .cat-image img {
+        width: 55px !important;
+        height: 55px !important;
+    }
+
+    .cats-scroll-container .cats-items-wrapper {
+        padding-bottom: 25px;
+    }
+
+    .cats-scroll-container .cat-item:last-child {
+        margin-bottom: 30px !important;
+    }
+
+    .cats-scroll-container .service-selection {
+        padding: 12px !important;
+        margin-top: 8px !important;
+    }
+    
+    .cats-scroll-container .service-select {
+        padding: 8px 10px !important;
+        font-size: 13px !important;
     }
 }
 
 @media (max-width: 480px) {
-    .slider-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 14px;
+    .cats-scroll-container {
+        padding: 10px !important;
     }
     
-    .slider-btn.prev-btn {
-        margin-left: -17px;
+    .cats-scroll-container .cat-card {
+        padding: 10px !important;
+        padding-left: 35px !important;
     }
     
-    .slider-btn.next-btn {
-        margin-right: -17px;
+    .cats-scroll-container .cat-selection input[type="checkbox"] {
+        top: 50% !important;
+        left: 8px !important;
+        transform: translateY(-50%) !important;
     }
     
-    .indicator {
-        width: 10px;
-        height: 10px;
+    .cats-scroll-container .cat-image img {
+        width: 45px !important;
+        height: 45px !important;
+    }
+    
+    .cats-scroll-container .cat-info h4 {
+        font-size: 14px !important;
+    }
+    
+    .cats-scroll-container .cat-info p {
+        font-size: 12px !important;
+    }
+    
+    .cats-scroll-container .cat-details {
+        font-size: 11px !important;
+    }
+    
+    .scroll-btn {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 12px !important;
+    }
+    
+    .scroll-indicator-track {
+        height: 40px !important;
+    }
+    
+    .scroll-indicator {
+        height: 15px !important;
     }
 }
 
-/* Enhanced Cat Items for Slider */
-.cats-slider-container .cat-item {
-    border: 2px solid #e9ecef;
-    border-radius: 15px;
-    overflow: hidden;
-    transition: all 0.3s ease;
+/* Animation for smooth scroll */
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cats-scroll-container .cat-item {
+    animation: fadeInSlide 0.3s ease-out;
+}
+
+/* Enhanced checkbox styling */
+.cats-scroll-container .cat-selection input[type="checkbox"] {
+    appearance: none;
     background: white;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    position: relative;
 }
 
-.cats-slider-container .cat-item:hover {
+.cats-scroll-container .cat-selection input[type="checkbox"]:checked {
+    background: #667eea;
     border-color: #667eea;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
-    transform: translateY(-5px);
 }
 
-.cats-slider-container .cat-item.selected {
-    border-color: #667eea;
-    background: #f8f9ff;
+.cats-scroll-container .cat-selection input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
 }
 
-.cats-slider-container .service-selection {
-    margin-top: auto;
+/* Debug styles (remove in production) */
+.cats-scroll-container.debug {
+    border: 2px dashed red !important;
+}
+
+.cats-scroll-container.debug .cat-item {
+    border: 1px solid blue !important;
+}
+
+.cats-scroll-container.debug .cats-items-wrapper {
+    border: 1px solid green !important;
+}
+
+/* PERBAIKAN: Debug mode yang bisa dihapus setelah fix */
+.cats-scroll-container.debug-mode {
+    border: 2px solid red !important;
+}
+
+.cats-scroll-container.debug-mode .cats-items-wrapper {
+    border: 1px solid blue !important;
+}
+
+.cats-scroll-container.debug-mode .cat-item {
+    border: 1px solid green !important;
+    position: relative;
+}
+
+.cats-scroll-container.debug-mode .cat-item::after {
+    content: attr(data-index);
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: red;
+    color: white;
+    padding: 2px 6px;
+    font-size: 10px;
+    border-radius: 3px;
+}
+
+/* Smooth transition untuk service selection */
+.cats-scroll-container .service-selection {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.cats-scroll-container .cat-item input:checked ~ .cat-card + .service-selection,
+.cats-scroll-container .service-selection[style*="display: block"] {
+    max-height: 200px; /* Cukup untuk dropdown */
+    padding: 15px;
+}
+
+@media (max-width: 768px) {
+    .cats-scroll-container .cat-item input:checked ~ .cat-card + .service-selection,
+    .cats-scroll-container .service-selection[style*="display: block"] {
+        max-height: 150px;
+        padding: 12px;
+    }
 }
 </style>
+
+<script>
+// Debug script untuk mobile - hapus setelah fix
+document.addEventListener('DOMContentLoaded', function() {
+    const scrollContainer = document.getElementById('cats-scroll-container');
+    
+    if (scrollContainer) {
+        console.log('=== SCROLL CONTAINER DEBUG ===');
+        
+        setTimeout(() => {
+            const wrapper = scrollContainer.querySelector('.cats-items-wrapper');
+            const catItems = wrapper ? wrapper.querySelectorAll('.cat-item') : [];
+            
+            console.log('Container height:', scrollContainer.style.height);
+            console.log('Wrapper found:', !!wrapper);
+            console.log('Cat items count:', catItems.length);
+            
+            if (catItems.length > 0) {
+                console.log('First item height:', catItems[0].offsetHeight);
+                console.log('First item margin:', window.getComputedStyle(catItems[0]).marginBottom);
+                
+                // Log all item heights
+                catItems.forEach((item, index) => {
+                    console.log(`Item ${index + 1} height:`, item.offsetHeight);
+                });
+            }
+            
+            // Check scroll bounds
+            const currentTransform = wrapper ? wrapper.style.transform : 'none';
+            console.log('Current transform:', currentTransform);
+            
+        }, 500);
+    }
+});
+</script>
+
 @endsection
