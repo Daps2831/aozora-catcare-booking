@@ -4,11 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">  {{-- TAMBAHKAN BARIS INI --}}
     <title>@yield('title', 'Aozora Cat Care')</title>
 
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
    
     @vite([
         'resources/css/app.css', 
@@ -275,6 +277,17 @@
     {{-- MAIN CONTENT --}}
     <main>
         @yield('content')
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Test apakah Bootstrap JS ter-load
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+                console.log('jQuery available:', typeof $ !== 'undefined');
+            });
+        </script>
+
     </main>
 
     {{-- FOOTER --}}

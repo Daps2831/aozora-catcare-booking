@@ -349,12 +349,84 @@ class BookingController extends Controller
     }
 
     private function getJamOperasional()
-{
-    // Bisa diambil dari config atau database
-    return [
-        'buka' => '08:00',
-        'tutup' => '18:30'
-    ];
-}
+    {
+        // Bisa diambil dari config atau database
+        return [
+            'buka' => '08:00',
+            'tutup' => '18:30'
+        ];
+    }
+
+    public function cancelBooking(Request $request, Booking $booking)
+    {
+        try {
+            // Validasi kepemilikan booking
+            if ($booking->customer_id !== auth()->user()->customer->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses untuk membatalkan booking ini'
+                ], 403);
+            }
+
+            // Validasi status booking
+            if ($booking->statusBooking === 'Batal' || $booking->statusBooking === 'Selesai') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Booking ini tidak dapat dibatalkan karena statusnya: ' . $booking->statusBooking
+                ], 400);
+            }
+
+            // Validasi waktu pembatalan (minimal 2 jam sebelum jadwal)
+            $bookingDateTime = \Carbon\Carbon::parse($booking->tanggalBooking . ' ' . $booking->jamBooking);
+            $now = \Carbon\Carbon::now();
+            $diffInHours = $now->diffInHours($bookingDateTime, false); // false = signed difference
+            
+            // Log untuk debugging
+            \Log::info('Cancel booking validation', [
+                'booking_id' => $booking->id,
+                'booking_datetime' => $bookingDateTime->format('Y-m-d H:i:s'),
+                'current_datetime' => $now->format('Y-m-d H:i:s'),
+                'diff_hours' => $diffInHours,
+                'can_cancel' => $diffInHours >= 2
+            ]);
+            
+            if ($diffInHours < 2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembatalan hanya dapat dilakukan minimal 2 jam sebelum jadwal booking. Sisa waktu: ' . 
+                            ($diffInHours > 0 ? number_format($diffInHours, 1) . ' jam' : 'Waktu sudah lewat')
+                ], 400);
+            }
+
+            // Update status booking menjadi Batal
+            $booking->update([
+                'statusBooking' => 'Batal'
+            ]);
+
+            // Log successful cancellation
+            \Log::info('Booking cancelled successfully', [
+                'booking_id' => $booking->id,
+                'customer_id' => auth()->user()->customer->id
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking berhasil dibatalkan'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Cancel booking error', [
+                'booking_id' => $booking->id ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat membatalkan booking: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
 

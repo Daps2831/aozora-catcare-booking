@@ -647,6 +647,18 @@ main {
     justify-content: center;
 }
 
+.riwayat-container .booking-card.batal {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    opacity: 0.8;
+}
+
+.riwayat-container .status-batal {
+    background: rgba(220, 53, 69, 0.2);
+    color: #721c24;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
 /* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
     .riwayat-container {

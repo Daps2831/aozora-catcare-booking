@@ -10,19 +10,18 @@ use App\Models\Booking;
 
 class DashboardController extends Controller
 {
-  
-
-
     public function userDashboard()
     {
         $user = Auth::user();
 
-        // Ambil data kucing dan jadwal booking milik user yang sedang login
-        // Ganti 'customerId' menjadi 'customer_id'
+        // Ambil data kucing milik user
         $kucingPengguna = Kucing::where('customer_id', $user->customer->id)->get();
+        
+        // Ambil semua booking (termasuk yang masa depan dan yang batal)
         $jadwalPengguna = Booking::where('customer_id', $user->customer->id)
-                                ->where('statusBooking', '!=', 'Selesai')
-                                ->with(['kucings', 'layanan'])
+                                ->with(['kucings', 'tim'])
+                                ->orderBy('tanggalBooking', 'desc')
+                                ->orderBy('jamBooking', 'desc')
                                 ->get();
         
         return view('user.dashboard', compact('user', 'kucingPengguna', 'jadwalPengguna'));
