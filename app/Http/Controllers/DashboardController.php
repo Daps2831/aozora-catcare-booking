@@ -10,24 +10,9 @@ use App\Models\Booking;
 
 class DashboardController extends Controller
 {
-    // Untuk halaman dashboard admin
-    public function adminDashboard()
-    {
-        $user = Auth::user();
-        
-        // Data untuk Kartu Statistik
-        $jumlahPelanggan = User::where('role', 'user')->count();
-        $jumlahKucing = Kucing::count();
-        $bookingHariIni = Booking::whereDate('tanggalBooking', today())->count();
+  
 
-        // Data untuk Tabel
-        $jadwalTerbaru = Booking::with(['customer', 'kucings', 'layanan'])->latest()->take(5)->get();
-        $pelangganBaru = User::where('role', 'user')->latest()->take(5)->get();
 
-        return view('admin.dashboard', compact('user', 'jumlahPelanggan', 'jumlahKucing', 'bookingHariIni', 'jadwalTerbaru', 'pelangganBaru'));
-    }
-
-    // Untuk halaman dashboard user biasa
     public function userDashboard()
     {
         $user = Auth::user();
