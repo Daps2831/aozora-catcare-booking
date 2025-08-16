@@ -43,7 +43,8 @@
                 <td>
                     <span class="badge badge-{{ 
                         $booking->statusBooking == 'Pending' ? 'warning' : 
-                        ($booking->statusBooking == 'Proses' ? 'info' : 'success') 
+                        ($booking->statusBooking == 'Proses' ? 'info' : 
+                        ($booking->statusBooking == 'Batal' || $booking->statusBooking == 'Dibatalkan' ? 'danger' : 'success')) 
                     }}">
                         {{ $booking->statusBooking }}
                     </span>
@@ -77,7 +78,7 @@
             <div class="row">
                 @foreach($booking->kucings as $index => $kucing)
                     <div class="col-md-6 mb-4">
-                        <div class="card border-left-primary">
+                        <div class  ="card border-left-primary">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
                                     {{-- Gambar Kucing --}}

@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initKucingchecked();
     validateBookingForm();
     initSelectAll();
-    initFullCalendar();
+    //initFullCalendar();
     initUserDropdown();
     initTotalHargaBooking();
     initBookingTimeValidation();
@@ -211,203 +211,206 @@ function initImagePreview() {
     }
 }
 
-function initFullCalendar() {
-    const calendarEl = document.getElementById('calendar');
-    if (!calendarEl || typeof FullCalendar === "undefined") return;
+// function initFullCalendar() {
+//     const calendarEl = document.getElementById('calendar');
+//     if (!calendarEl || typeof FullCalendar === "undefined") return;
 
-    const timeInfo = document.getElementById('calendar-time-info');
-    const btnKonfirmasi = document.getElementById('btn-konfirmasi-booking');
-    let selectedDate = null;
+//     const timeInfo = document.getElementById('calendar-time-info');
+//     const btnKonfirmasi = document.getElementById('btn-konfirmasi-booking');
+//     let selectedDate = null;
 
-    // Ambil data fullDates, disabledDatesData, dan events dari atribut data-*
-    let fullDates = [];
-    let disabledDatesData = {};
-    let events = [];
+//     // Ambil data fullDates, disabledDatesData, dan events dari atribut data-*
+//     let fullDates = [];
+//     let disabledDatesData = {};
+//     let events = [];
 
-    // Tambahkan filter event selesai
-    const showFinishedCheckbox = document.getElementById('show-finished-booking');
-    let allEvents = [];
-    if (calendarEl.dataset.events) {
-        try { allEvents = JSON.parse(calendarEl.dataset.events); } catch (e) { allEvents = []; }
-    }
+//     // Tambahkan filter event selesai
+//     const showFinishedCheckbox = document.getElementById('show-finished-booking');
+//     let allEvents = [];
+//     if (calendarEl.dataset.events) {
+//         try { allEvents = JSON.parse(calendarEl.dataset.events); } catch (e) { allEvents = []; }
+//     }
 
-    // Fungsi untuk filter event sesuai status checkbox
-    function getFilteredEvents() {
-        if (showFinishedCheckbox && !showFinishedCheckbox.checked) {
-            // Hanya tampilkan event yang BUKAN selesai
-            return allEvents.filter(ev => 
-                !ev.statusBooking || ev.statusBooking.toLowerCase() !== 'selesai'
-            );
-        }
-        return allEvents;
-    }
+//     // Fungsi untuk filter event sesuai status checkbox
+//     function getFilteredEvents() {
+//         if (showFinishedCheckbox && !showFinishedCheckbox.checked) {
+//             // Hanya tampilkan event yang BUKAN selesai
+//             return allEvents.filter(ev => 
+//                 !ev.statusBooking || ev.statusBooking.toLowerCase() !== 'selesai'
+//             );
+//         }
+//         return allEvents;
+//     }
     
     
-    if (calendarEl.dataset.fullDates) {
-        try { 
-            fullDates = JSON.parse(calendarEl.dataset.fullDates);
-        } catch (e) { fullDates = []; }
-    }
+//     if (calendarEl.dataset.fullDates) {
+//         try { 
+//             fullDates = JSON.parse(calendarEl.dataset.fullDates);
+//         } catch (e) { fullDates = []; }
+//     }
     
-    if (calendarEl.dataset.disabledDatesData) {
-        try { 
-            disabledDatesData = JSON.parse(calendarEl.dataset.disabledDatesData);
-        } catch (e) { disabledDatesData = {}; }
-    }
+//     if (calendarEl.dataset.disabledDatesData) {
+//         try { 
+//             disabledDatesData = JSON.parse(calendarEl.dataset.disabledDatesData);
+//         } catch (e) { disabledDatesData = {}; }
+//     }
     
-    if (calendarEl.dataset.events) {
-        try { events = JSON.parse(calendarEl.dataset.events); } catch (e) { events = []; }
-    }
+//     if (calendarEl.dataset.events) {
+//         try { events = JSON.parse(calendarEl.dataset.events); } catch (e) { events = []; }
+//     }
 
-    // Fungsi untuk normalisasi tanggal ke UTC
-    function normalizeDate(dateStr) {
-        const date = new Date(dateStr + 'T00:00:00.000Z');
-        return date.toISOString().split('T')[0];
-    }
+//     // Fungsi untuk normalisasi tanggal ke UTC
+//     function normalizeDate(dateStr) {
+//         const date = new Date(dateStr + 'T00:00:00.000Z');
+//         return date.toISOString().split('T')[0];
+//     }
 
-    // Normalisasi fullDates
-    fullDates = fullDates.map(date => normalizeDate(date));
+//     // Normalisasi fullDates
+//     fullDates = fullDates.map(date => normalizeDate(date));
     
-    const today = normalizeDate(new Date().toISOString().split('T')[0]);
+//     const today = normalizeDate(new Date().toISOString().split('T')[0]);
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'id',
-        selectable: true,
-        events: getFilteredEvents(),
-        timeZone: 'UTC',
+//     const calendar = new FullCalendar.Calendar(calendarEl, {
+//         initialView: 'dayGridMonth',
+//         locale: 'id',
+//         selectable: true,
+//         events: getFilteredEvents(),
+//         timeZone: 'UTC',
       
-        eventContent: function(arg) {
-            let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
-            let namaTim = arg.event.extendedProps?.namaTim ?? arg.event.namaTim;
-            let statusBooking = arg.event.extendedProps?.statusBooking ?? arg.event.statusBooking;
+//         eventContent: function(arg) {
+//             let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
+//             let namaTim = arg.event.extendedProps?.namaTim ?? arg.event.namaTim;
+//             let statusBooking = arg.event.extendedProps?.statusBooking ?? arg.event.statusBooking;
 
-            let bgColor = '#eaf1fb';
-            if (statusBooking && statusBooking.toLowerCase() === 'selesai') {
-                bgColor = '#eafbe7';
-            }
+//             let bgColor = '#eaf1fb';
+//             if (statusBooking && statusBooking.toLowerCase() === 'selesai') {
+//                 bgColor = '#eafbe7';
+//             }
 
-            return {
-                html: `
-                    <div style="background:${bgColor};border-radius:8px;padding:4px 8px;display:inline-block;">
-                        <div style="font-weight:bold;">${arg.event.title}</div>
-                        <div style="margin-top:2px;font-size:12px;">
-                            <span style="background:#3498db;color:#fff;border-radius:8px;padding:2px 6px;margin-right:4px;">${jumlahKucing} kucing</span>
-                            <span style="background:#2ecc71;color:#fff;border-radius:8px;padding:2px 6px;">${namaTim}</span>
-                        </div>
-                        ${statusBooking && statusBooking.toLowerCase() === 'selesai' ? '<span style="color:#27ae60;font-weight:bold;font-size:12px;">Selesai</span>' : ''}
-                    </div>
-                `
-            }
-        },
-        selectAllow: function(selectInfo) {
-            const dateStr = normalizeDate(selectInfo.startStr);
-            return dateStr >= today && !fullDates.includes(dateStr);
-        },
-        dateClick: function(info) {
-            const dateStr = normalizeDate(info.dateStr);
+//             return {
+//                 html: `
+//                     <div style="background:${bgColor};border-radius:8px;padding:4px 8px;display:inline-block;">
+//                         <div style="font-weight:bold;">${arg.event.title}</div>
+//                         <div style="margin-top:2px;font-size:12px;">
+//                             <span style="background:#3498db;color:#fff;border-radius:8px;padding:2px 6px;margin-right:4px;">${jumlahKucing} kucing</span>
+//                             <span style="background:#2ecc71;color:#fff;border-radius:8px;padding:2px 6px;">${namaTim}</span>
+//                         </div>
+//                         ${statusBooking && statusBooking.toLowerCase() === 'selesai' ? '<span style="color:#27ae60;font-weight:bold;font-size:12px;">Selesai</span>' : ''}
+//                     </div>
+//                 `
+//             }
+//         },
+//         selectAllow: function(selectInfo) {
+//             const dateStr = normalizeDate(selectInfo.startStr);
+//             return dateStr >= today && !fullDates.includes(dateStr);
+//         },
+//         dateClick: function(info) {
+//             const dateStr = normalizeDate(info.dateStr);
             
-            const clickedMonth = info.date.getMonth();
-            const currentMonth = calendar.getDate().getMonth();
+//             const clickedMonth = info.date.getMonth();
+//             const currentMonth = calendar.getDate().getMonth();
 
-            if (clickedMonth !== currentMonth) {
-                calendar.gotoDate(info.date);
-                setTimeout(() => {
-                    calendar.select(info.date);
-                }, 10);
-            } else {
-                calendar.select(info.date);
-            }
+//             if (clickedMonth !== currentMonth) {
+//                 calendar.gotoDate(info.date);
+//                 setTimeout(() => {
+//                     calendar.select(info.date);
+//                 }, 10);
+//             } else {
+//                 calendar.select(info.date);
+//             }
 
-            if (dateStr < today) {
-                timeInfo.textContent = 'Tanggal sudah berlalu, tidak bisa dipilih.';
-                btnKonfirmasi.disabled = true;
-                return;
-            }
+//             if (dateStr < today) {
+//                 timeInfo.textContent = 'Tanggal sudah berlalu, tidak bisa dipilih.';
+//                 btnKonfirmasi.disabled = true;
+//                 return;
+//             }
             
-            // Cek apakah tanggal dinonaktifkan admin dengan keterangan
-            if (disabledDatesData[dateStr]) {
-                const keterangan = disabledDatesData[dateStr].keterangan;
-                timeInfo.textContent = `Tanggal tidak tersedia dikarenakan ${keterangan}. Silakan pilih tanggal lain.`;
-                btnKonfirmasi.disabled = true;
-                return;
-            }
+//             // Cek apakah tanggal dinonaktifkan admin dengan keterangan
+//             if (disabledDatesData[dateStr]) {
+//                 const keterangan = disabledDatesData[dateStr].keterangan;
+//                 timeInfo.textContent = `Tanggal tidak tersedia dikarenakan ${keterangan}. Silakan pilih tanggal lain.`;
+//                 btnKonfirmasi.disabled = true;
+//                 return;
+//             }
             
-            // Cek apakah tanggal penuh (kuota habis)
-            if (fullDates.includes(dateStr)) {
-                timeInfo.textContent = 'Tanggal penuh, silakan pilih tanggal lain.';
-                btnKonfirmasi.disabled = true;
-                return;
-            }
+//             // Cek apakah tanggal penuh (kuota habis)
+//             if (fullDates.includes(dateStr)) {
+//                 timeInfo.textContent = 'Tanggal penuh, silakan pilih tanggal lain.';
+//                 btnKonfirmasi.disabled = true;
+//                 return;
+//             }
             
-            selectedDate = dateStr;
-            timeInfo.textContent = 'Tanggal dipilih: ' + dateStr;
-            btnKonfirmasi.disabled = false;
-        },
-        dayCellDidMount: function(arg) {
-            const dateStr = normalizeDate(arg.date.toISOString().split('T')[0]);
+//             selectedDate = dateStr;
+//             timeInfo.textContent = 'Tanggal dipilih: ' + dateStr;
+//             btnKonfirmasi.disabled = false;
+//         },
+//         dayCellDidMount: function(arg) {
+//             const dateStr = normalizeDate(arg.date.toISOString().split('T')[0]);
             
-            // Cek jika tanggal disable
-            if (dateStr < today || fullDates.includes(dateStr)) {
-                arg.el.classList.add('fc-day-disabled');
+//             // Cek jika tanggal disable
+//             if (dateStr < today || fullDates.includes(dateStr)) {
+//                 arg.el.classList.add('fc-day-disabled');
                 
-                // Tambahkan teks indicator jika tanggal dinonaktifkan admin
-                if (disabledDatesData[dateStr] && dateStr >= today) {
-                    const dayNumber = arg.el.querySelector('.fc-daygrid-day-number');
-                    if (dayNumber) {
-                        dayNumber.style.textDecoration = 'line-through';
-                        dayNumber.style.color = '#999';
+//                 // Tambahkan teks indicator jika tanggal dinonaktifkan admin
+//                 if (disabledDatesData[dateStr] && dateStr >= today) {
+//                     const dayNumber = arg.el.querySelector('.fc-daygrid-day-number');
+//                     if (dayNumber) {
+//                         dayNumber.style.textDecoration = 'line-through';
+//                         dayNumber.style.color = '#999';
                         
-                        // Tambahkan tooltip dengan keterangan
-                        dayNumber.title = `Tidak tersedia: ${disabledDatesData[dateStr].keterangan}`;
-                    }
-                }
-                return;
-            }
+//                         // Tambahkan tooltip dengan keterangan
+//                         dayNumber.title = `Tidak tersedia: ${disabledDatesData[dateStr].keterangan}`;
+//                     }
+//                 }
+//                 return;
+//             }
             
-            // Handler klik pada seluruh cell tanggal
-            arg.el.addEventListener('click', function(e) {
-                // Cek lagi saat diklik untuk memastikan
-                if (disabledDatesData[dateStr]) {
-                    const keterangan = disabledDatesData[dateStr].keterangan;
-                    timeInfo.textContent = `Tanggal tidak tersedia dikarenakan ${keterangan}. Silakan pilih tanggal lain.`;
-                    btnKonfirmasi.disabled = true;
-                    return;
-                }
+//             // Handler klik pada seluruh cell tanggal
+//             arg.el.addEventListener('click', function(e) {
+//                 // Cek lagi saat diklik untuk memastikan
+//                 if (disabledDatesData[dateStr]) {
+//                     const keterangan = disabledDatesData[dateStr].keterangan;
+//                     timeInfo.textContent = `Tanggal tidak tersedia dikarenakan ${keterangan}. Silakan pilih tanggal lain.`;
+//                     btnKonfirmasi.disabled = true;
+//                     return;
+//                 }
                 
-                if (fullDates.includes(dateStr)) {
-                    timeInfo.textContent = 'Tanggal penuh, silakan pilih tanggal lain.';
-                    btnKonfirmasi.disabled = true;
-                    return;
-                }
+//                 if (fullDates.includes(dateStr)) {
+//                     timeInfo.textContent = 'Tanggal penuh, silakan pilih tanggal lain.';
+//                     btnKonfirmasi.disabled = true;
+//                     return;
+//                 }
                 
-                selectedDate = dateStr;
-                timeInfo.textContent = 'Tanggal dipilih: ' + dateStr;
-                btnKonfirmasi.disabled = false;
-                // Highlight cell yang dipilih
-                document.querySelectorAll('.fc-daygrid-day.selected-date').forEach(el => el.classList.remove('selected-date'));
-                arg.el.classList.add('selected-date');
-            });
-        },
-    });
-    calendar.render();
+//                 selectedDate = dateStr;
+//                 timeInfo.textContent = 'Tanggal dipilih: ' + dateStr;
+//                 btnKonfirmasi.disabled = false;
+//                 // Highlight cell yang dipilih
+//                 document.querySelectorAll('.fc-daygrid-day.selected-date').forEach(el => el.classList.remove('selected-date'));
+//                 arg.el.classList.add('selected-date');
+//             });
+//         },
+//     });
+//     calendar.render();
 
-    // Tambahkan event listener pada checkbox
-    if (showFinishedCheckbox) {
-        showFinishedCheckbox.addEventListener('change', function() {
-            calendar.removeAllEvents();
-            calendar.addEventSource(getFilteredEvents());
-        });
-    }
+//     // Tambahkan event listener pada checkbox
+//     if (showFinishedCheckbox) {
+//         showFinishedCheckbox.addEventListener('change', function() {
+//             calendar.removeAllEvents();
+//             calendar.addEventSource(getFilteredEvents());
+//         });
+//     }
 
-    btnKonfirmasi.addEventListener('click', function () {
-        if (selectedDate && !fullDates.includes(selectedDate) && !disabledDatesData[selectedDate]) {
-            window.location.href = `/booking/create?date=${selectedDate}`;
-        } else {
-            alert("Silakan pilih tanggal yang tersedia terlebih dahulu!");
-        }
-    });
-}
+//     // PERBAIKAN: Tambahkan null safety untuk btnKonfirmasi
+//     if (btnKonfirmasi) {
+//         btnKonfirmasi.addEventListener('click', function () {
+//             if (selectedDate && !fullDates.includes(selectedDate) && !disabledDatesData[selectedDate]) {
+//                 window.location.href = `/booking/create?date=${selectedDate}`;
+//             } else {
+//                 alert("Silakan pilih tanggal yang tersedia terlebih dahulu!");
+//             }
+//         });
+//     }
+// }
 
 //fungsi alamat
 function initAddress() {
@@ -792,58 +795,11 @@ window.initBookingChartFuture = function(labels7Future, labels30Future, labels36
     });
 };
 
-function initFullCalendarAdmin() {
-    const calendarEl = document.getElementById('calendar');
-    if (!calendarEl || typeof FullCalendar === "undefined") return;
+// Update fungsi initFullCalendarAdmin untuk mobile event yang lebih compact:
 
-    let events = [];
-    if (calendarEl.dataset.events) {
-        try { events = JSON.parse(calendarEl.dataset.events); } catch (e) { events = []; }
-    }
+// Update initFullCalendarAdmin untuk zoom mobile yang lebih baik:
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'id',
-        events: events,
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: ''
-        },
-        eventContent: function(arg) {
-            let jumlahKucing = arg.event.extendedProps?.jumlahKucing ?? arg.event.jumlahKucing;
-            let namaTim = arg.event.extendedProps?.namaTim ?? arg.event.namaTim;
-            let statusBooking = arg.event.extendedProps?.statusBooking ?? arg.event.statusBooking;
 
-            let bgColor = '#eaf1fb';
-            if (statusBooking && statusBooking.toLowerCase() === 'selesai') {
-                bgColor = '#eafbe7';
-            }
-
-            return {
-                html: `
-                    <div style="background:${bgColor};border-radius:8px;padding:4px 8px;display:inline-block;">
-                        <div style="font-weight:bold;">${arg.event.title}</div>
-                        <div style="margin-top:2px;font-size:12px;">
-                            <span style="background:#3498db;color:#fff;border-radius:8px;padding:2px 6px;margin-right:4px;">${jumlahKucing} kucing</span>
-                            <span style="background:#2ecc71;color:#fff;border-radius:8px;padding:2px 6px;">${namaTim}</span>
-                        </div>
-                        ${statusBooking && statusBooking.toLowerCase() === 'selesai' ? '<span style="color:#27ae60;font-weight:bold;font-size:12px;">Selesai</span>' : ''}
-                    </div>
-                `
-            }
-        },
-        eventClick: function(info) {
-            // (Optional) klik event bisa redirect ke detail booking
-            // window.location.href = `/admin/booking/${info.event.id}`;
-        },
-        dateClick: function(info) {
-            // Redirect ke halaman list booking di tanggal yang diklik
-            window.location.href = `/admin/booking/by-date/${info.dateStr}`;
-        }
-    });
-    calendar.render();
-}
 
 function initTotalHargaBooking() {
     const hargaTotalContainer = document.getElementById("hargaTotal");

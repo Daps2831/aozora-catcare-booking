@@ -107,7 +107,7 @@
             <div class="content-section">
                 <div class="section-header">
                     <h2><i class="fas fa-calendar-alt"></i> Jadwal Mendatang</h2>
-                    <a href="{{ route('booking.index') }}" class="btn-secondary">
+                    <a href="{{ route('booking.index') }}" class="btn-primary">
                         <i class="fas fa-plus"></i> Booking Baru
                     </a>
                 </div>
@@ -315,7 +315,7 @@ main {
     z-index: 1 !important;
 }
 
-/* MODAL STYLES - SIMPLIFIED AND WORKING */
+/* MODAL STYLES - SIMPLIFIED*/
 .modal {
     display: none;
     position: fixed;

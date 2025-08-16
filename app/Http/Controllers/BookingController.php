@@ -128,6 +128,7 @@ class BookingController extends Controller
 
             // Check kuota dengan lock untuk mencegah race condition
             $kucingTerdaftarHariIni = Booking::whereDate('tanggalBooking', $tanggal)
+            ->whereNotIn('statusBooking', ['Batal', 'Dibatalkan']) // ✅ TAMBAHKAN FILTER
                                             ->lockForUpdate()
                                             ->withCount('kucings')
                                             ->get()
@@ -175,6 +176,7 @@ class BookingController extends Controller
             $bookingBentrok = Booking::whereDate('tanggalBooking', $tanggal)
                 ->where('statusBooking', '!=', 'Selesai')
                 ->where('statusBooking', '!=', 'Dibatalkan')
+                ->where('statusBooking', '!=', 'Batal')
                 ->where(function($query) use ($jamMulai, $jamSelesai) {
                     $query->where(function($q) use ($jamMulai, $jamSelesai) {
                         // Booking lain mulai sebelum booking ini selesai
@@ -296,12 +298,15 @@ class BookingController extends Controller
 
     public function index()
     {
-        // Ambil semua booking beserta relasi kucings dan tim
-        $bookings = Booking::with(['kucings', 'tim'])->get();
+        // Ambil booking yang tidak dibatalkan (filter out cancelled bookings)
+        $bookings = Booking::with(['kucings', 'tim'])
+            ->whereNotIn('statusBooking', ['Batal', 'Dibatalkan']) // Filter out cancelled bookings
+            ->get();
 
-        // Siapkan array untuk tanggal penuh (kuota >= 10)
+        // Siapkan array untuk tanggal penuh (kuota >= 10) - hanya hitung booking aktif
         $bookingsPerTanggal = Booking::withCount('kucings')
             ->select('tanggalBooking')
+            ->whereNotIn('statusBooking', ['Batal', 'Dibatalkan']) // Jangan hitung booking yang dibatalkan
             ->get()
             ->groupBy('tanggalBooking')
             ->map(function($items) {
@@ -325,7 +330,7 @@ class BookingController extends Controller
         $disabledDates = array_keys($disabledDatesData);
         $fullDates = array_merge($fullDates, $disabledDates);
 
-        // Siapkan events untuk FullCalendar
+        // Siapkan events untuk FullCalendar - hanya booking aktif
         $events = [];
         foreach ($bookings as $booking) {
             $start = \Carbon\Carbon::parse($booking->tanggalBooking . ' ' . $booking->jamBooking);
@@ -343,7 +348,7 @@ class BookingController extends Controller
 
         return view('booking.index', [
             'fullDates' => $fullDates,
-            'disabledDatesData' => $disabledDatesData, // Kirim data keterangan
+            'disabledDatesData' => $disabledDatesData,
             'events'    => $events,
         ]);
     }
